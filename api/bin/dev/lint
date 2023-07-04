@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+set -eu
+
+current_dir="$(basename $(pwd))"
+
+if [[ "$current_dir" != "oye" ]]; then
+    echo "ERROR: you must execute this from the root of the repo" >&2
+    exit 1
+fi
+
+source api/bin/dev/_activate_venv
+
+cd api
+
+ruff check . --config=pyproject.toml
+flake8 .
+black --check --diff .
+isort --check --diff .
+python -m mypy --config-file pyproject.toml --pretty .

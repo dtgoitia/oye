@@ -1,0 +1,28 @@
+[tool.isort]
+profile = "black"
+src_paths = ['src', 'tests']
+
+[tool.ruff]
+line-length = 108
+exclude = [ '.venv' ]
+
+[tool.mypy]
+cache_dir = "/dev/null"
+check_untyped_defs = true
+disallow_incomplete_defs = true
+follow_imports = "normal"
+ignore_missing_imports = false
+no_implicit_optional = true
+show_error_context = true
+strict_equality = true
+strict_optional = true
+warn_incomplete_stub = true
+warn_redundant_casts = true
+warn_unused_configs = true
+warn_unused_ignores = true
+
+[tool.pytest.ini_options]
+addopts = "--strict-markers"
+log_auto_indent = true
+log_cli = true
+testpaths = "tests"

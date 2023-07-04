@@ -1,0 +1,17 @@
+version: "3.8"
+
+services:
+  oye-api-dev:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+      target: dev
+    image: oye-api-dev
+    container_name: oye-api-dev
+    ports:
+      - "5000:5000"
+    environment:
+      - DB_PATH=${DB_PATH}
+    volumes:
+      - ./api:/app
+    # healthcheck:
