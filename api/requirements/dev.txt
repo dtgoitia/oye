@@ -33,6 +33,8 @@ flask==2.3.2
     #   flask-cors
 flask-cors==4.0.0
     # via -r api/requirements/prod.in
+freezegun==1.2.2
+    # via pytest-freezegun
 idna==3.4
     # via requests
 iniconfig==2.0.0
@@ -85,7 +87,7 @@ platformdirs==3.8.0
     # via black
 pluggy==1.2.0
     # via pytest
-prompt-toolkit==3.0.38
+prompt-toolkit==3.0.39
     # via ipython
 ptyprocess==0.7.0
     # via pexpect
@@ -104,13 +106,19 @@ pygments==2.15.1
 pyproject-hooks==1.0.0
     # via build
 pytest==7.4.0
+    # via
+    #   -r api/requirements/dev.in
+    #   pytest-freezegun
+pytest-freezegun==0.4.2
     # via -r api/requirements/dev.in
+python-dateutil==2.8.2
+    # via freezegun
 requests==2.31.0
     # via -r api/requirements/dev.in
 ruff==0.0.276
     # via -r api/requirements/dev.in
 six==1.16.0
-    # via asttokens
+    # via python-dateutil
 stack-data==0.6.2
     # via ipython
 traitlets==5.9.0
