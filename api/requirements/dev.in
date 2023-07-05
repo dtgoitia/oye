@@ -6,5 +6,6 @@ mypy
 pip-tools
 pudb
 pytest
+pytest-freezegun
 requests
 ruff
