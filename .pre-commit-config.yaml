@@ -1,4 +1,7 @@
 default_stages: [commit]
+
+fail_fast: true
+
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v2.3.0
@@ -6,6 +9,8 @@ repos:
       - id: trailing-whitespace
         stages: [commit]
       - id: end-of-file-fixer
+        stages: [commit]
+      - id: check-yaml
         stages: [commit]
       - id: check-toml
         stages: [commit]
@@ -29,14 +34,36 @@ repos:
         files: \.(ts|tsx)$
 
   # python
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    # Ruff version.
+    rev: v0.0.276
+    hooks:
+      - id: ruff
+        name: 'api: ruff'
+        files: '^api/(src|tests)/.*\.py'
+        args: [--fix, --config=api/pyproject.toml]
+
+  - repo: https://github.com/PyCQA/isort
+    rev: 5.12.0  # make sure to match what goes in requirements/dev.txt
+    hooks:
+      - id: isort
+        name: 'api: isort'
+        files: '^api/(src|tests)/.*\.py'
+        args: [--settings-path=api/pyproject.toml]
+
   - repo: https://github.com/ambv/black
     rev: 23.3.0  # make sure to match what goes in requirements/dev.txt
     hooks:
       - id: black
-        args: [--diff, --check]
+        name: 'api: black'
+        files: '^api/(src|tests)/.*\.py'
+        args: [--config=api/pyproject.toml]
+
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v1.4.1
     hooks:
       - id: mypy
-        exclude: ^tests/
-        args: [--config-file, api/pyproject.toml, --pretty]
+        name: 'api: mypy'
+        files: '^api/(src|tests)/.*\.py'
+        args: [--config-file=api/pyproject.toml, --pretty, api]
+        pass_filenames: false  # do not pass files as arguments to the script

@@ -9,12 +9,44 @@ if [[ "$current_dir" != "oye" ]]; then
     exit 1
 fi
 
+assert_file_exists () {
+    path="${1}"
+    if [[ ! -f "${path}" ]]; then
+        echo >&2 "ERROR: file not found: ${path}"
+        exit 1
+    fi
+}
+
+show_header () {
+    header="${1}"
+    echo ""
+    echo "#==============================================================================="
+    echo "#"
+    echo "#  ${header}"
+    echo "#"
+}
+
 source api/bin/dev/_activate_venv
 
 cd api
 
-ruff check . --config=pyproject.toml
-flake8 .
-black --check --diff .
-isort --check --diff .
-python -m mypy --config-file pyproject.toml --pretty .
+pyproject_path="$(realpath "pyproject.toml" )"
+setupcfg_path="$(realpath "setup.cfg" )"
+assert_file_exists "${pyproject_path}"
+assert_file_exists "${setupcfg_path}"
+
+show_header "ruff"
+ruff check . --config "${pyproject_path}"
+
+show_header "flake8"
+flake8 --config "${setupcfg_path}" .
+
+show_header "black"
+black --config "${pyproject_path}" --check --diff .
+
+show_header "isort"
+# isort --settings-path "${pyproject_path}" --show-config
+isort --settings-path "${pyproject_path}" --check --diff .
+
+show_header "mypy"
+python -m mypy --config-file "${pyproject_path}" --pretty .
