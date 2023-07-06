@@ -29,6 +29,8 @@ multidict==6.0.4
     #   aiohttp
     #   sanic
     #   yarl
+nanoid==2.0.0
+    # via -r api/requirements/prod.in
 pyyaml==6.0
     # via sanic-ext
 sanic[ext]==23.3.0
