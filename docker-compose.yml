@@ -8,9 +8,28 @@ services:
       target: dev
     image: oye-api-dev
     container_name: oye-api-dev
+    command: python -m src.adapters.api
     ports:
       - "5000:5000"
     environment:
+      - DEBUG=true
+      - DB_PATH=${DB_PATH}
+    volumes:
+      - ./api:/app
+    # healthcheck:
+
+  oye-api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+      target: release
+    image: oye-api
+    container_name: oye-api
+    command: python -m src.adapters.api
+    ports:
+      - "5000:5000"
+    environment:
+      - DEBUG=false
       - DB_PATH=${DB_PATH}
     volumes:
       - ./api:/app

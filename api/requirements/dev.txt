@@ -4,6 +4,8 @@ aiohttp==3.8.4
     # via -r api/requirements/prod.in
 aiosignal==1.3.1
     # via aiohttp
+anyio==3.7.1
+    # via httpcore
 apischema==0.18.0
     # via -r api/requirements/prod.in
 asttokens==2.2.1
@@ -19,7 +21,10 @@ black==23.3.0
 build==0.10.0
     # via pip-tools
 certifi==2023.5.7
-    # via requests
+    # via
+    #   httpcore
+    #   httpx
+    #   requests
 charset-normalizer==3.1.0
     # via
     #   aiohttp
@@ -42,15 +47,23 @@ frozenlist==1.3.3
     # via
     #   aiohttp
     #   aiosignal
+h11==0.14.0
+    # via httpcore
 html5tagger==1.3.0
     # via
     #   sanic
     #   tracerite
+httpcore==0.16.3
+    # via httpx
 httptools==0.5.0
     # via sanic
+httpx==0.23.3
+    # via sanic-testing
 idna==3.4
     # via
+    #   anyio
     #   requests
+    #   rfc3986
     #   yarl
 iniconfig==2.0.0
     # via pytest
@@ -122,7 +135,10 @@ pyproject-hooks==1.0.0
 pytest==7.4.0
     # via
     #   -r api/requirements/dev.in
+    #   pytest-asyncio
     #   pytest-freezegun
+pytest-asyncio==0.21.0
+    # via -r api/requirements/dev.in
 pytest-freezegun==0.4.2
     # via -r api/requirements/dev.in
 python-dateutil==2.8.2
@@ -131,6 +147,8 @@ pyyaml==6.0
     # via sanic-ext
 requests==2.31.0
     # via -r api/requirements/dev.in
+rfc3986[idna2008]==1.5.0
+    # via httpx
 ruff==0.0.277
     # via -r api/requirements/dev.in
 sanic[ext]==23.3.0
@@ -139,8 +157,17 @@ sanic-ext==23.3.0
     # via sanic
 sanic-routing==22.8.0
     # via sanic
+sanic-testing==23.3.0
+    # via -r api/requirements/dev.in
 six==1.16.0
-    # via python-dateutil
+    # via
+    #   asttokens
+    #   python-dateutil
+sniffio==1.3.0
+    # via
+    #   anyio
+    #   httpcore
+    #   httpx
 stack-data==0.6.2
     # via ipython
 tracerite==1.1.0

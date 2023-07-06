@@ -6,6 +6,8 @@ mypy
 pip-tools
 pudb
 pytest
+pytest-asyncio
 pytest-freezegun
 requests
 ruff
+sanic-testing
