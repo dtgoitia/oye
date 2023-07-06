@@ -1,3 +1,5 @@
+aiofiles==23.1.0
+    # via sanic
 apischema==0.18.0
     # via -r api/requirements/prod.in
 asttokens==2.2.1
@@ -6,8 +8,6 @@ backcall==0.2.0
     # via ipython
 black==23.3.0
     # via -r api/requirements/dev.in
-blinker==1.6.2
-    # via flask
 build==0.10.0
     # via pip-tools
 certifi==2023.5.7
@@ -17,7 +17,6 @@ charset-normalizer==3.1.0
 click==8.1.3
     # via
     #   black
-    #   flask
     #   pip-tools
 decorator==5.1.1
     # via
@@ -27,14 +26,14 @@ executing==1.2.0
     # via stack-data
 flake8==6.0.0
     # via -r api/requirements/dev.in
-flask==2.3.2
-    # via
-    #   -r api/requirements/prod.in
-    #   flask-cors
-flask-cors==4.0.0
-    # via -r api/requirements/prod.in
 freezegun==1.2.2
     # via pytest-freezegun
+html5tagger==1.3.0
+    # via
+    #   sanic
+    #   tracerite
+httptools==0.5.0
+    # via sanic
 idna==3.4
     # via requests
 iniconfig==2.0.0
@@ -45,22 +44,16 @@ ipython==8.14.0
     # via ipdb
 isort==5.12.0
     # via -r api/requirements/dev.in
-itsdangerous==2.1.2
-    # via flask
 jedi==0.18.2
     # via
     #   ipython
     #   pudb
-jinja2==3.1.2
-    # via flask
-markupsafe==2.1.3
-    # via
-    #   jinja2
-    #   werkzeug
 matplotlib-inline==0.1.6
     # via ipython
 mccabe==0.7.0
     # via flake8
+multidict==6.0.4
+    # via sanic
 mypy==1.4.1
     # via -r api/requirements/dev.in
 mypy-extensions==1.0.0
@@ -113,20 +106,32 @@ pytest-freezegun==0.4.2
     # via -r api/requirements/dev.in
 python-dateutil==2.8.2
     # via freezegun
+pyyaml==6.0
+    # via sanic-ext
 requests==2.31.0
     # via -r api/requirements/dev.in
-ruff==0.0.276
+ruff==0.0.277
     # via -r api/requirements/dev.in
+sanic[ext]==23.3.0
+    # via -r api/requirements/prod.in
+sanic-ext==23.3.0
+    # via sanic
+sanic-routing==22.8.0
+    # via sanic
 six==1.16.0
     # via python-dateutil
 stack-data==0.6.2
     # via ipython
+tracerite==1.1.0
+    # via sanic
 traitlets==5.9.0
     # via
     #   ipython
     #   matplotlib-inline
 typing-extensions==4.7.1
     # via mypy
+ujson==5.8.0
+    # via sanic
 urllib3==2.0.3
     # via requests
 urwid==2.1.2
@@ -135,10 +140,12 @@ urwid==2.1.2
     #   urwid-readline
 urwid-readline==0.13
     # via pudb
+uvloop==0.17.0
+    # via sanic
 wcwidth==0.2.6
     # via prompt-toolkit
-werkzeug==2.3.6
-    # via flask
+websockets==11.0.3
+    # via sanic
 wheel==0.40.0
     # via pip-tools
 
