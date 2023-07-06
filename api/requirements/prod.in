@@ -1,3 +1,2 @@
 apischema
-flask
-flask-cors
+sanic[ext]
