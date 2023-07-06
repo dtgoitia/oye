@@ -1,9 +1,17 @@
 aiofiles==23.1.0
     # via sanic
+aiohttp==3.8.4
+    # via -r api/requirements/prod.in
+aiosignal==1.3.1
+    # via aiohttp
 apischema==0.18.0
     # via -r api/requirements/prod.in
 asttokens==2.2.1
     # via stack-data
+async-timeout==4.0.2
+    # via aiohttp
+attrs==23.1.0
+    # via aiohttp
 backcall==0.2.0
     # via ipython
 black==23.3.0
@@ -13,7 +21,9 @@ build==0.10.0
 certifi==2023.5.7
     # via requests
 charset-normalizer==3.1.0
-    # via requests
+    # via
+    #   aiohttp
+    #   requests
 click==8.1.3
     # via
     #   black
@@ -28,6 +38,10 @@ flake8==6.0.0
     # via -r api/requirements/dev.in
 freezegun==1.2.2
     # via pytest-freezegun
+frozenlist==1.3.3
+    # via
+    #   aiohttp
+    #   aiosignal
 html5tagger==1.3.0
     # via
     #   sanic
@@ -35,7 +49,9 @@ html5tagger==1.3.0
 httptools==0.5.0
     # via sanic
 idna==3.4
-    # via requests
+    # via
+    #   requests
+    #   yarl
 iniconfig==2.0.0
     # via pytest
 ipdb==0.13.13
@@ -53,7 +69,10 @@ matplotlib-inline==0.1.6
 mccabe==0.7.0
     # via flake8
 multidict==6.0.4
-    # via sanic
+    # via
+    #   aiohttp
+    #   sanic
+    #   yarl
 mypy==1.4.1
     # via -r api/requirements/dev.in
 mypy-extensions==1.0.0
@@ -148,6 +167,8 @@ websockets==11.0.3
     # via sanic
 wheel==0.40.0
     # via pip-tools
+yarl==1.9.2
+    # via aiohttp
 
 # The following packages are considered to be unsafe in a requirements file:
 # pip
