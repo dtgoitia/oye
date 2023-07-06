@@ -1,7 +1,8 @@
 import datetime
 
 from src.config import Config
-from src.main import Engine, Once, Reminder, ReminderRepository, notify_to_stdout
+from src.domain.reminders import Once
+from src.main import Engine, Reminder, ReminderRepository, notify_to_stdout
 
 
 def initialize_engine(config: Config) -> Engine:
@@ -30,8 +31,8 @@ def initialize_engine(config: Config) -> Engine:
         schedule=Once(at=_d("2023-07-06 00:00:00 +01:00")),
     )
 
-    engine.add_reminder(reminder_a)
-    engine.add_reminder(reminder_b)
-    engine.add_reminder(reminder_c)
+    engine.create_reminder(reminder_a)
+    engine.create_reminder(reminder_b)
+    engine.create_reminder(reminder_c)
 
     return engine
