@@ -1,11 +1,14 @@
-from apischema import deserialize, serialize
+from apischema import serialize
 from sanic import Request, Sanic
+from sanic import exceptions as errors
 from sanic.log import logger
 from sanic.response import JSONResponse, json
 
+from src import domain
 from src.config import get_config
+from src.domain.inference import infer_reminder
 from src.domain.use_cases import initialize_engine
-from src.main import Engine, Reminder
+from src.main import Engine
 
 config = get_config()
 
@@ -38,15 +41,21 @@ async def health(_: Request) -> JSONResponse:
 async def get_all_reminders(_: Request) -> JSONResponse:
     engine: Engine = api.ctx.engine
     reminders = list(engine.get_reminders())
+    breakpoint()
     return json({"reminders": serialize(reminders)})
 
 
 @api.post(ApiRoutes.reminder)
 async def create_reminder(request: Request) -> JSONResponse:
-    reminder = deserialize(Reminder, request.json)
+    utterance: str = request.json["utterance"]
+    try:
+        reminder = infer_reminder(utterance=utterance)
+    except domain.inference.InferenceFailed as error:
+        logger.debug(f"{error.__class__.__name__}: {error}")
+        return errors.BadRequest("Could not understand utterance")
+
     engine: Engine = api.ctx.engine
-    engine.add_reminder(reminder=reminder)
-    added = reminder
+    added = engine.create_reminder(reminder=reminder)
     return json({"added_reminder": serialize(added)})
 
 

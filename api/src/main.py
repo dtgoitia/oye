@@ -11,208 +11,16 @@ from __future__ import annotations
 
 import asyncio
 import datetime
-import enum
 import heapq
 import logging
-import re
-from dataclasses import dataclass
-from typing import Callable, Iterator, Protocol, TypeAlias, assert_never
+from typing import Callable, Iterator, TypeAlias
 
 from src.config import Config
+from src.domain.ids import generate_id
+from src.domain.reminders import NewReminder, Occurrence, Reminder
 from src.model import ReminderId
 
 logger = logging.getLogger(__name__)
-
-
-@dataclass(frozen=True)
-class Reminder:
-    """
-    Represents a task/note that must be reminded (once/many times).
-
-    A Reminder can have only one Schedule.
-        - NOTE: if a Schedule is timezone sensitive (e.g.: every day at 9am), when a
-          client changes timezones it must notify the API so that the API can update
-          the Schedule. If the client allows scheduling offline reminders, then the
-          client is responsible for dealing with the timezone changes.
-    """
-
-    id: ReminderId
-    description: str
-    schedule: Once  # add more types here: Once | Recurring
-
-    @property
-    def next_occurrence(self) -> Occurrence:
-        return self.schedule.next_occurrence
-
-
-class Schedule(Protocol):
-    """
-    Represents when a Reminder Notifications must be triggered, which could be once or
-    multiple times. Each of those "times" is an _Occurrence_.
-
-    TODO: perhaps https://pypi.org/project/python-crontab/ can model this for you
-    """
-
-    # starts_at: datetime.datetime
-    # ends_at: datetime.datetime  # exclusive? inclusive?
-
-    @property
-    def next_occurrence(self) -> Occurrence:
-        raise NotImplementedError(
-            "using the definition of the schedule and the current time, calculate next ocurrence"
-        )
-
-
-@dataclass(frozen=True)
-class Once(Schedule):
-    """
-    Represents a Schedule that only has one Occurrence.
-    """
-
-    _type = "once"
-
-    at: datetime.datetime
-
-    @property
-    def next_occurrence(self) -> Occurrence:
-        return self.at
-
-
-@dataclass(frozen=True)
-class Recurring(Schedule):
-    """
-    Represents a Schedule that has multiple Occurrences.
-    """
-
-    _type = "recurring"
-
-    at: datetime.datetime
-
-    @property
-    def next_occurrence(self) -> Occurrence:
-        return self.at
-
-
-"""
-Moment in which a user will get notified regarding a specific Reminder.
-"""
-Occurrence: TypeAlias = datetime.datetime
-
-
-class Scheduler:
-    """
-    Responsible for holding the state of the queue, mappings, etc.
-    """
-
-    def add(self, reminder: Reminder) -> None:
-        ...
-
-    def replace(self, reminder: Reminder) -> None:
-        """
-        Update an existing reminder
-        """
-        # TODO: match by reminder.id
-        ...
-
-    def start(self) -> None:
-        """
-        Start regularly checking the reminders and notify when needed
-        """
-        # TODO: when a reminder must be notified --> `notify(reminder)`
-        ...
-
-
-ENDS_WITH_IN = re.compile(r".* in (?P<amount>[0-9]+)\s*(?P<unit>[a-zA-Z]+)$")
-
-
-class InferenceFailed(Exception):
-    ...
-
-
-def get_now_utc() -> datetime.datetime:
-    return datetime.datetime.now(tz=datetime.timezone.utc)
-
-
-class AmountMustBeNumeric(Exception):
-    ...
-
-
-class UnsupportedTimeUnit(Exception):
-    ...
-
-
-class TimeUnit(enum.Enum):
-    days = "days"
-    hour = "hour"
-    minute = "minute"
-    second = "second"
-
-
-def _infer_time_unit(raw: str) -> TimeUnit:
-    match raw:
-        case "day" | "days":
-            return TimeUnit.days
-        case "h" | "hour" | "hours":
-            return TimeUnit.hour
-        case "m" | "min" | "mins" | "minute" | "minutes":
-            return TimeUnit.minute
-        case "s" | "sec" | "secs" | "second" | "seconds":
-            return TimeUnit.second
-        case _:
-            raise UnsupportedTimeUnit(f"{raw!r} is not a supported time unit")
-
-
-def _infer_delta(raw_amount: str, raw_unit: str) -> datetime.timedelta:
-    try:
-        amount = int(raw_amount)
-    except ValueError:
-        raise AmountMustBeNumeric(f"expected a numeric amount, but got {raw_amount!r}")
-
-    unit = _infer_time_unit(raw_unit)
-
-    match unit:
-        case TimeUnit.days:
-            return datetime.timedelta(days=amount)
-        case TimeUnit.hour:
-            return datetime.timedelta(hours=amount)
-        case TimeUnit.minute:
-            return datetime.timedelta(minutes=amount)
-        case TimeUnit.second:
-            return datetime.timedelta(seconds=amount)
-        case _:
-            assert_never(f"Unsupported time unit: {unit}")
-
-
-def _infer_in_x_time(raw: str) -> Once:
-    """
-    Return the Schedule for an utterance like 'in 3 mins'.
-    """
-
-    match = ENDS_WITH_IN.match(raw)
-    if not match:
-        raise InferenceFailed(f"expected to end with 'in X min', but got {raw} instead")
-
-    amount = match.group("amount")
-    unit = match.group("unit")
-
-    return Once(at=get_now_utc() + _infer_delta(raw_amount=amount, raw_unit=unit))
-
-
-def infer_schedule(raw: str) -> Schedule:
-    """
-    Takes human friendly texts and transforms them into something that can be scheduled
-
-    The interpreter is timezone aware.
-    """
-    return _infer_in_x_time(raw=raw)
-
-    # yesterday = datetime.datetime.today() - datetime.timedelta(days=1)
-    # tomorrow = datetime.datetime.today() + datetime.timedelta(days=1)
-    # return Schedule(
-    #     starts_at=yesterday,
-    #     interval="* * * * *",
-    #     ends_at=tomorrow,
-    # )
 
 
 Priority: TypeAlias = float
@@ -284,13 +92,28 @@ class UniqueHeapQueue:
 
 
 class ReminderRepository:
+    _reminder_id_prefix = "rem"
+
     def __init__(self) -> None:
         self._map: dict[ReminderId, Reminder] = {}
 
-    def add(self, reminder: Reminder) -> None:
-        if reminder.id in self._map:
-            return
+    def _generate_reminder_id(self) -> ReminderId:
+        while True:
+            _id = generate_id(prefix=self._reminder_id_prefix)
+            if _id not in self._map:
+                return _id
+
+    def add(self, new_reminder: NewReminder | Reminder) -> Reminder:
+        if isinstance(new_reminder, NewReminder):
+            reminder = Reminder(
+                id=self._generate_reminder_id(),
+                description=new_reminder.description,
+                schedule=new_reminder.schedule,
+            )
+        else:
+            reminder = new_reminder
         self._map[reminder.id] = reminder
+        return reminder
 
     def get_reminders_from(self, *, occurrences: Iterator[Occurrence]) -> Iterator[Reminder]:
         _map = self._reminders_by_next_occurrence()
@@ -336,10 +159,15 @@ class Engine:
         now = datetime.datetime.now(tz=datetime.timezone.utc)
         self._last_tick = now - self._tick_delta
 
-    def add_reminder(self, reminder: Reminder) -> None:
-        logger.debug(f"adding reminder {reminder.id}")
-        self._queue.add([reminder.next_occurrence])
-        self._man.add(reminder)
+    def create_reminder(self, reminder: NewReminder) -> Reminder:
+        logger.debug("creating reminder")
+        if isinstance(reminder, Reminder):
+            print(f">>> adding {reminder}")
+        else:
+            breakpoint()
+        added = self._man.add(reminder)
+        self._queue.add([added.next_occurrence])
+        return added
 
     def get_reminders(self) -> Iterator[Reminder]:
         occurrences = self._queue.peek_all()
