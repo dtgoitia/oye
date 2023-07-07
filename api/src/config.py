@@ -10,7 +10,7 @@ class Config:
     port: int
     debug_mode: bool
     engine_tick_delta: Seconds
-    server_name: str
+    db_uri: str
 
     @property
     def api_base_url(self) -> str:
@@ -19,6 +19,13 @@ class Config:
 
 class ConfigError(Exception):
     ...
+
+
+def env_var_to_str(name: str) -> str:
+    if value := os.environ.get(name):
+        return value
+
+    raise ConfigError(f"expected to the {name!r} environment variable to be set, but it is not")
 
 
 def env_var_to_bool(name: str, default: bool | None = None) -> bool:
@@ -51,7 +58,7 @@ def get_config() -> Config:
         engine_tick_delta=5,
         host="0.0.0.0",
         port=5000,
-        server_name="oye",
+        db_uri=env_var_to_str("DB_URL"),
     )
 
     return config

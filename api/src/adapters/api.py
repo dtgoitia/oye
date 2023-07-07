@@ -10,12 +10,7 @@ from src.config import get_config
 from src.domain.inference import infer_reminder
 from src.main import Engine
 
-config = get_config()
-
-api = Sanic.get_app(
-    name=config.server_name,
-    force_create=True,
-)
+api = Sanic.get_app(name="oye-api", force_create=True)
 
 
 class ApiRoutes:
@@ -57,6 +52,7 @@ async def create_reminder(request: Request) -> JSONResponse | errors.BadRequest:
 
 
 if __name__ == "__main__":
+    config = get_config()
     api.run(
         host=config.host,
         port=config.port,

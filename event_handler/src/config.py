@@ -15,7 +15,7 @@ class ConfigError(Exception):
     ...
 
 
-def env_var_to_str(name: str, default: bool | None = None) -> str:
+def env_var_to_str(name: str) -> str:
     if value := os.environ.get(name):
         return value
 
