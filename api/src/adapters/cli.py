@@ -3,7 +3,8 @@ import datetime
 
 from src.adapters.clients.oye import OyeClient
 from src.config import get_config
-from src.main import Once, Reminder
+from src.domain.reminders import Once
+from src.main import Reminder
 
 
 async def amain() -> None:

@@ -24,15 +24,6 @@ class ApiRoutes:
     test_publish = "/pub"
 
 
-# @api.reload_process_start
-# async def before_api_starts(server_app: Sanic) -> None:
-#     logger.debug("init: starting...")
-#     engine = initialize_engine(config=config)
-#     logger.debug("init: engine initialized")
-#     server_app.ctx.engine = engine
-#     logger.debug("init: engine attached to server")
-
-
 @api.get(ApiRoutes.health)
 async def health(_: Request) -> JSONResponse:
     return json({"health": True})

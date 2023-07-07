@@ -16,9 +16,7 @@ import logging
 from typing import Callable, Iterator, TypeAlias
 
 from src.config import Config
-from src.domain.ids import generate_id
-from src.domain.reminders import NewReminder, Occurrence, Reminder
-from src.model import ReminderId
+from src.domain.reminders import NewReminder, Occurrence, Reminder, ReminderRepository
 
 logger = logging.getLogger(__name__)
 
@@ -91,55 +89,6 @@ class UniqueHeapQueue:
             yield occurrence
 
 
-class ReminderRepository:
-    _reminder_id_prefix = "rem"
-
-    def __init__(self) -> None:
-        self._map: dict[ReminderId, Reminder] = {}
-
-    def _generate_reminder_id(self) -> ReminderId:
-        while True:
-            _id = generate_id(prefix=self._reminder_id_prefix)
-            if _id not in self._map:
-                return _id
-
-    def add(self, new_reminder: NewReminder | Reminder) -> Reminder:
-        if isinstance(new_reminder, NewReminder):
-            reminder = Reminder(
-                id=self._generate_reminder_id(),
-                description=new_reminder.description,
-                schedule=new_reminder.schedule,
-            )
-        else:
-            reminder = new_reminder
-        self._map[reminder.id] = reminder
-        return reminder
-
-    def get_reminders_from(self, *, occurrences: Iterator[Occurrence]) -> Iterator[Reminder]:
-        _map = self._reminders_by_next_occurrence()
-
-        for occurrence in occurrences:
-            try:
-                # TODO: add test to ensure that the same occurrence in different
-                # timezones behave as if they would be the same datetime
-                reminders = _map[occurrence]
-            except KeyError:
-                continue
-
-            yield from reminders
-
-    def _reminders_by_next_occurrence(self) -> dict[Occurrence, list[Reminder]]:
-        result: dict[Occurrence, list[Reminder]] = {}
-        for reminder in self._map.values():
-            occurrence = reminder.next_occurrence
-            if occurrence in result:
-                result[occurrence].append(reminder)
-            else:
-                result[occurrence] = [reminder]
-
-        return result
-
-
 NotifyCallback: TypeAlias = Callable[[Reminder], None]
 
 
@@ -159,7 +108,7 @@ class Engine:
         now = datetime.datetime.now(tz=datetime.timezone.utc)
         self._last_tick = now - self._tick_delta
 
-    def create_reminder(self, reminder: NewReminder) -> Reminder:
+    def create_reminder(self, reminder: NewReminder | Reminder) -> Reminder:
         logger.debug("creating reminder")
         if isinstance(reminder, Reminder):
             print(f">>> adding {reminder}")
