@@ -28,7 +28,7 @@ async def create_reminder(new_reminder: NewReminder, db: Connection) -> Reminder
             failures += 1
         except Exception as error:
             reminder = None
-            logger.debug(f"{error.__class__.__name__}: {str(error)}")
+            logger.error(f"{error.__class__.__name__}: {str(error)}")
             failures += 1
 
         if failures == retry_limit:
