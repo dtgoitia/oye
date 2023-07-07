@@ -84,3 +84,20 @@ repos:
         files: '^event_handler/(src|tests)/.*\.py'
         args: [--config-file=event_handler/pyproject.toml, --pretty, api]
         pass_filenames: false  # do not pass files as arguments to the script
+
+  - repo: local
+    hooks:
+      - id: pytest
+        name: 'pytest: api'
+        files: '^api/(src|tests)/.*\.py'
+        entry: api/bin/dev/test
+        language: system
+        verbose: true  # outputs log of test run
+        pass_filenames: false  # do not pass files as arguments to to the script
+      - id: pytest
+        name: 'pytest: event_handler'
+        files: '^event_handler/(src|tests)/.*\.py'
+        entry: event_handler/bin/dev/test
+        language: system
+        verbose: true  # outputs log of test run
+        pass_filenames: false  # do not pass files as arguments to to the script

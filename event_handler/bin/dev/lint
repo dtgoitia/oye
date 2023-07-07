@@ -2,6 +2,7 @@
 
 set -eu
 
+target_service="event_handler"
 current_dir="$(basename $(pwd))"
 
 if [[ "$current_dir" != "oye" ]]; then
@@ -22,13 +23,13 @@ show_header () {
     echo ""
     echo "#==============================================================================="
     echo "#"
-    echo "#  ${header}"
+    echo "#  ${header}: ${target_service}"
     echo "#"
 }
 
-source event_handler/bin/dev/_activate_venv
+source "${target_service}/bin/dev/_activate_venv"
 
-cd event_handler
+cd "${target_service}"
 
 pyproject_path="$(realpath "pyproject.toml" )"
 setupcfg_path="$(realpath "setup.cfg" )"
