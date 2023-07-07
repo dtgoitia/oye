@@ -7,6 +7,7 @@ def get_test_config() -> Config:
     return Config(
         nats_url="dummy nats url",
         debug_mode=True,
+        tick_interval=1,
     )
 
 
