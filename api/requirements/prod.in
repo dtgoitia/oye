@@ -1,4 +1,5 @@
 aiohttp
 apischema
 nanoid
+nats-py
 sanic[ext]

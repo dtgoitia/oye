@@ -10,6 +10,7 @@ from src.adapters.api import api
 async def test_add_reminder() -> None:
     client: SanicASGITestClient = api.asgi_client
 
+    breakpoint()
     _, response = await client.get("/reminder")
     assert response.status == 200
     assert response.json == {
