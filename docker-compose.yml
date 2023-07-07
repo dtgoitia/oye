@@ -14,8 +14,11 @@ services:
     environment:
       - DEBUG=true
       - DB_PATH=${DB_PATH}
+      - "NATS_URL=${NATS_URL:-nats://nats:4222}"
     volumes:
       - ./api:/app
+    depends_on:
+      - nats
     # healthcheck:
 
   oye-api:
@@ -34,3 +37,14 @@ services:
     volumes:
       - ./api:/app
     # healthcheck:
+
+  nats:
+    image: 'nats:2.9.19'
+    # entrypoint
+    # expose:  # not visible to host, only to other containers
+    #   - "4222"
+    ports:
+      - "4222:4222"
+      - "8222:8222"
+    hostname: nats-server
+    # src: https://nats.io/blog/docker-compose-plus-nats/
