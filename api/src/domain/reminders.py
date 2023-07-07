@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import datetime
 from dataclasses import dataclass
-from typing import Protocol, TypeAlias
+from typing import Iterator, Protocol, TypeAlias
 
+from src.domain.ids import generate_id
 from src.model import ReminderId
 
 """
@@ -12,7 +13,7 @@ Moment in which a user will get notified regarding a specific Reminder.
 Occurrence: TypeAlias = datetime.datetime
 
 
-class Schedule(Protocol):
+class Schedulable(Protocol):
     """
     Represents when a Reminder Notifications must be triggered, which could be once or
     multiple times. Each of those "times" is an _Occurrence_.
@@ -31,7 +32,7 @@ class Schedule(Protocol):
 
 
 @dataclass(frozen=True)
-class Once(Schedule):
+class Once(Schedulable):
     """
     Represents a Schedule that only has one Occurrence.
     """
@@ -46,7 +47,7 @@ class Once(Schedule):
 
 
 @dataclass(frozen=True)
-class Recurring(Schedule):
+class Recurring(Schedulable):
     """
     Represents a Schedule that has multiple Occurrences.
     """
@@ -60,10 +61,13 @@ class Recurring(Schedule):
         return self.at
 
 
+Schedule: TypeAlias = Once  # add more types here: Once | Recurring
+
+
 @dataclass(frozen=True)
 class NewReminder:
     description: str
-    schedule: Once  # add more types here: Once | Recurring
+    schedule: Schedule
 
 
 @dataclass(frozen=True)
@@ -85,3 +89,52 @@ class Reminder:
     @property
     def next_occurrence(self) -> Occurrence:
         return self.schedule.next_occurrence
+
+
+class ReminderRepository:
+    _reminder_id_prefix = "rem"
+
+    def __init__(self) -> None:
+        self._map: dict[ReminderId, Reminder] = {}
+
+    def _generate_reminder_id(self) -> ReminderId:
+        while True:
+            _id = generate_id(prefix=self._reminder_id_prefix)
+            if _id not in self._map:
+                return _id
+
+    def add(self, new_reminder: NewReminder | Reminder) -> Reminder:
+        if isinstance(new_reminder, NewReminder):
+            reminder = Reminder(
+                id=self._generate_reminder_id(),
+                description=new_reminder.description,
+                schedule=new_reminder.schedule,
+            )
+        else:
+            reminder = new_reminder
+        self._map[reminder.id] = reminder
+        return reminder
+
+    def get_reminders_from(self, *, occurrences: Iterator[Occurrence]) -> Iterator[Reminder]:
+        _map = self._reminders_by_next_occurrence()
+
+        for occurrence in occurrences:
+            try:
+                # TODO: add test to ensure that the same occurrence in different
+                # timezones behave as if they would be the same datetime
+                reminders = _map[occurrence]
+            except KeyError:
+                continue
+
+            yield from reminders
+
+    def _reminders_by_next_occurrence(self) -> dict[Occurrence, list[Reminder]]:
+        result: dict[Occurrence, list[Reminder]] = {}
+        for reminder in self._map.values():
+            occurrence = reminder.next_occurrence
+            if occurrence in result:
+                result[occurrence].append(reminder)
+            else:
+                result[occurrence] = [reminder]
+
+        return result
