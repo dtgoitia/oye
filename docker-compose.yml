@@ -56,7 +56,7 @@ services:
       target: dev
     image: oye-event-handler-dev
     container_name: oye-event-handler-dev
-    command: python -m src.main
+    command: python -m src.adapters.event_handler
     environment:
       - "NATS_URL=${NATS_URL:-nats://nats:4222}"
     volumes:
