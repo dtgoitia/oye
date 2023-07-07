@@ -48,3 +48,18 @@ services:
       - "8222:8222"
     hostname: nats-server
     # src: https://nats.io/blog/docker-compose-plus-nats/
+
+  oye-event-handler-dev:
+    build:
+      context: ./event_handler
+      dockerfile: Dockerfile
+      target: dev
+    image: oye-event-handler-dev
+    container_name: oye-event-handler-dev
+    command: python -m src.main
+    environment:
+      - "NATS_URL=${NATS_URL:-nats://nats:4222}"
+    volumes:
+      - ./event_handler:/app
+    depends_on:
+      - nats
