@@ -1,5 +1,6 @@
 import datetime
 import json
+import sqlite3
 from dataclasses import dataclass
 from textwrap import dedent
 from typing import TypeAlias
@@ -38,6 +39,10 @@ async def create_table_if_needed(table: Table, db: Connection) -> None:
     ).strip()
     await db.execute(query)
 
+    index_name = f"idx_{table.name}_id"
+    query = f"CREATE UNIQUE INDEX {index_name} ON {table.name}(id);"
+    await db.execute(query)
+
 
 async def create_tables_if_needed(db: Connection) -> None:
     await create_table_if_needed(table=Tables.reminders, db=db)
@@ -63,6 +68,10 @@ async def read_all_reminders(db: Connection) -> list[Reminder]:
 SqliteParams: TypeAlias = tuple
 
 
+class ReminderIdMustBeUnique(Exception):
+    ...
+
+
 async def insert_reminder(reminder: Reminder, db: Connection) -> None:
     table = Tables.reminders
     query = dedent(
@@ -79,7 +88,12 @@ async def insert_reminder(reminder: Reminder, db: Connection) -> None:
     json_str = json.dumps(json_dict)
 
     params = (reminder.id, now, json_str)
-    await db.execute(sql=query, parameters=params)
+    try:
+        await db.execute(sql=query, parameters=params)
+    except sqlite3.IntegrityError:
+        raise ReminderIdMustBeUnique(
+            "cannot insert reminder because there already is a reminder with the same ID in the DB"
+        )
 
 
 async def upsert_reminder(reminder: Reminder, db: Connection) -> None:
