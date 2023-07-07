@@ -14,14 +14,28 @@ from src.domain.reminders import Reminder
 class Table:
     name: str
     fields: list[str]
+    primary_key_field: str
 
 
 class Tables:
-    reminders = Table(name="reminders", fields=["id", "updated_at", "reminder"])
+    reminders = Table(
+        name="reminders",
+        fields=["id", "updated_at", "reminder"],
+        primary_key_field="id",
+    )
 
 
 async def create_table_if_needed(table: Table, db: Connection) -> None:
-    query = f"CREATE TABLE IF NOT EXISTS {table.name}({ ', '.join(table.fields) });"
+    primary_key = table.primary_key_field
+    other_fields = [field for field in table.fields if field != primary_key]
+    query = dedent(
+        f"""
+        CREATE TABLE IF NOT EXISTS {table.name}(
+            {primary_key} PRIMARY KEY,
+            { ', '.join(other_fields) }
+        );
+        """
+    ).strip()
     await db.execute(query)
 
 
@@ -65,4 +79,26 @@ async def insert_reminder(reminder: Reminder, db: Connection) -> None:
     json_str = json.dumps(json_dict)
 
     params = (reminder.id, now, json_str)
+    await db.execute(sql=query, parameters=params)
+
+
+async def upsert_reminder(reminder: Reminder, db: Connection) -> None:
+    table = Tables.reminders
+    query = dedent(
+        f"""
+        INSERT INTO {table.name}({ ', '.join(table.fields) })
+        VALUES ({ ', '.join(['?' for _ in table.fields]) })
+        ON CONFLICT(id) DO UPDATE SET
+            updated_at=?,
+            reminder=?
+        ;
+        """
+    ).strip()
+
+    now = datetime.datetime.now().isoformat()
+
+    json_dict = serialize(reminder)
+    json_str = json.dumps(json_dict)
+
+    params = (reminder.id, now, json_str, now, json_str)
     await db.execute(sql=query, parameters=params)
