@@ -43,7 +43,7 @@ async def get_all_reminders(_: Request) -> JSONResponse:
 
 
 @api.post(ApiRoutes.reminder)
-async def create_reminder(request: Request) -> JSONResponse:
+async def create_reminder(request: Request) -> JSONResponse | errors.BadRequest:
     utterance: str = request.json["utterance"]
     try:
         reminder = infer_reminder(utterance=utterance)

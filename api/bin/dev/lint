@@ -2,6 +2,7 @@
 
 set -eu
 
+target_service="api"
 current_dir="$(basename $(pwd))"
 
 if [[ "$current_dir" != "oye" ]]; then
@@ -22,13 +23,13 @@ show_header () {
     echo ""
     echo "#==============================================================================="
     echo "#"
-    echo "#  ${header}"
+    echo "#  ${header}: ${target_service}"
     echo "#"
 }
 
-source api/bin/dev/_activate_venv
+source "${target_service}/bin/dev/_activate_venv"
 
-cd api
+cd "${target_service}"
 
 pyproject_path="$(realpath "pyproject.toml" )"
 setupcfg_path="$(realpath "setup.cfg" )"

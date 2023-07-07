@@ -81,7 +81,7 @@ async def amain() -> None:
     while True:
         try:
             msg = await sub.next_msg(timeout=None)
-            print(f"{msg.data} on subject {msg.subject}")
+            print(f"{msg.data!r} on subject {msg.subject}")
             event = nats_message_to_event(message=msg)
             await handle_event(event=event)
         except FailedToParseMessage as error:
