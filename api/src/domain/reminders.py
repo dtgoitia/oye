@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from typing import Iterator, Protocol, TypeAlias
 
 from src.domain.ids import generate_id
-from src.model import ReminderId
+from src.model import JsonDict, ReminderId
 
 """
 Moment in which a user will get notified regarding a specific Reminder.
@@ -30,6 +30,9 @@ class Schedulable(Protocol):
             "using the definition of the schedule and the current time, calculate next ocurrence"
         )
 
+    def to_json(self) -> JsonDict:
+        raise NotImplementedError("provide a valid JSON representation")
+
 
 @dataclass(frozen=True)
 class Once(Schedulable):
@@ -44,6 +47,9 @@ class Once(Schedulable):
     @property
     def next_occurrence(self) -> Occurrence:
         return self.at
+
+    def to_json(self) -> JsonDict:
+        return {"at": self.at.isoformat()}
 
 
 @dataclass(frozen=True)
@@ -69,6 +75,9 @@ class NewReminder:
     description: str
     schedule: Schedule
 
+    def to_json(self) -> JsonDict:
+        return {"description": self.description, "schedule": self.schedule.to_json()}
+
 
 @dataclass(frozen=True)
 class Reminder:
@@ -89,6 +98,9 @@ class Reminder:
     @property
     def next_occurrence(self) -> Occurrence:
         return self.schedule.next_occurrence
+
+    def to_json(self) -> JsonDict:
+        return {"id": self.id, "description": self.description, "schedule": self.schedule.to_json()}
 
 
 class ReminderRepository:
