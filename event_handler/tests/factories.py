@@ -5,10 +5,7 @@ from src.config import Config
 
 def get_test_config() -> Config:
     return Config(
-        host="0.0.0.0",
-        port=5001,
-        server_name="test-server",
-        engine_tick_delta=1,
+        nats_url="dummy nats url",
         debug_mode=True,
     )
 
