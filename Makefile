@@ -13,8 +13,10 @@ set_up_development_environment:
 	@echo Installing Python dependencies outside of the container, so that the IDE can detect them
 	@# this step is necessary because otherwise docker compose creates a node_modules
 	@# folder with root permissions and outside-container build fails
-	cd api;~/.pyenv/versions/3.11.2/bin/python -m venv .venv/
-	bash api/bin/dev/install_dev_deps
+	api/bin/dev/create_venv
+	api/bin/dev/install_dev_deps
+	event_handler/bin/dev/create_venv
+	event_handler/bin/dev/install_dev_deps
 
 	@echo ""
 	@echo ""
@@ -47,19 +49,15 @@ run_api:
 	docker compose up $(API_NAME)
 
 lint_api:
-	bash api/bin/dev/lint
+	api/bin/dev/lint
 
 test_api:
 	docker compose run --rm $(API_NAME) pytest -v .
 
-compile_api_development_dependencies:
-	bash api/bin/dev/compile_dev_deps
-
-compile_api_production_dependencies:
-	bash api/bin/dev/compile_prod_deps
-
-install_api_development_dependencies:
-	bash api/bin/dev/install_dev_deps
+compile_and_install_api_dev_deps:
+	api/bin/dev/compile_prod_deps
+	api/bin/dev/compile_dev_deps
+	api/bin/dev/install_dev_deps
 
 rebuild_api:
 	docker compose down
@@ -79,19 +77,15 @@ run_event_handler:
 	docker compose up $(EVENT_HANDLER_NAME)
 
 lint_event_handler:
-	bash event_handler/bin/dev/lint
+	event_handler/bin/dev/lint
 
 test_event_handler:
 	docker compose run --rm $(EVENT_HANDLER_NAME) pytest -v .
 
-compile_event_handler_development_dependencies:
-	bash event_handler/bin/dev/compile_dev_deps
-
-compile_event_handler_production_dependencies:
-	bash event_handler/bin/dev/compile_prod_deps
-
-install_event_handler_development_dependencies:
-	bash event_handler/bin/dev/install_dev_deps
+compile_and_install_event_handler_dev_deps:
+	event_handler/bin/dev/compile_prod_deps
+	event_handler/bin/dev/compile_dev_deps
+	event_handler/bin/dev/install_dev_deps
 
 rebuild_event_handler:
 	docker compose down
