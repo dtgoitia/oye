@@ -1,11 +1,14 @@
 import os
 from dataclasses import dataclass
 
+from src.model import Seconds
+
 
 @dataclass(frozen=True)
 class Config:
     nats_url: str
     debug_mode: bool
+    tick_interval: Seconds
 
 
 class ConfigError(Exception):
@@ -44,6 +47,10 @@ def _to_bool(raw: str) -> bool:
 
 
 def get_config() -> Config:
-    config = Config(debug_mode=env_var_to_bool("DEBUG", False), nats_url=env_var_to_str("NATS_URL"))
+    config = Config(
+        debug_mode=env_var_to_bool("DEBUG", False),
+        nats_url=env_var_to_str("NATS_URL"),
+        tick_interval=1,
+    )
 
     return config
