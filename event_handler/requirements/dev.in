@@ -1,0 +1,11 @@
+black
+flake8
+ipdb
+isort
+mypy
+pip-tools
+pudb
+pytest
+pytest-asyncio
+pytest-freezegun
+ruff

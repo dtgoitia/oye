@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+set -eu
+
+current_dir="$(basename $(pwd))"
+
+if [[ "$current_dir" != "oye" ]]; then
+    echo "ERROR: you must execute this from the root of the repo" >&2
+    exit 1
+fi
+
+source event_handler/bin/dev/_activate_venv
+
+find event_handler/requirements -type f -name "prod.txt" -delete
+pip-compile event_handler/requirements/prod.in \
+    --output-file event_handler/requirements/prod.txt \
+    --no-header \
+    --no-emit-index-url \
+    --verbose
