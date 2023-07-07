@@ -1,10 +1,11 @@
+import aiosqlite
 from apischema import serialize
 from sanic import Request, Sanic
 from sanic import exceptions as errors
 from sanic.log import logger
 from sanic.response import JSONResponse, json
 
-from src import domain
+from src import domain, use_cases
 from src.adapters.clients import nats
 from src.config import get_config
 from src.domain.inference import infer_reminder
@@ -41,13 +42,14 @@ async def get_all_reminders(_: Request) -> JSONResponse:
 async def create_reminder(request: Request) -> JSONResponse | errors.BadRequest:
     utterance: str = request.json["utterance"]
     try:
-        reminder = infer_reminder(utterance=utterance)
+        new_reminder = infer_reminder(utterance=utterance)
     except domain.inference.InferenceFailed as error:
         logger.debug(f"{error.__class__.__name__}: {error}")
         return errors.BadRequest("Could not understand utterance")
 
-    engine: Engine = api.ctx.engine
-    added = engine.create_reminder(reminder=reminder)
+    async with aiosqlite.connect(database=config.db_uri) as db:
+        added = await use_cases.create_reminder(new_reminder, db=db)
+
     return json({"added_reminder": serialize(added)})
 
 

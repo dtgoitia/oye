@@ -78,6 +78,9 @@ class NewReminder:
     def to_json(self) -> JsonDict:
         return {"description": self.description, "schedule": self.schedule.to_json()}
 
+    def to_reminder(self, id: ReminderId) -> Reminder:
+        return Reminder(id=id, description=self.description, schedule=self.schedule)
+
 
 @dataclass(frozen=True)
 class Reminder:
@@ -101,6 +104,10 @@ class Reminder:
 
     def to_json(self) -> JsonDict:
         return {"id": self.id, "description": self.description, "schedule": self.schedule.to_json()}
+
+
+def generate_reminder_id() -> ReminderId:
+    return generate_id(prefix=ReminderRepository._reminder_id_prefix)
 
 
 class ReminderRepository:
