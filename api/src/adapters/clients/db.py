@@ -1,14 +1,19 @@
 import datetime
 import json
+import logging
 import sqlite3
 from dataclasses import dataclass
 from textwrap import dedent
 from typing import TypeAlias
 
+import aiosqlite
 from aiosqlite import Connection
 from apischema import deserialize, serialize
 
+from src.config import Config
 from src.domain.reminders import Reminder
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
@@ -26,6 +31,17 @@ class Tables:
     )
 
 
+async def initialize(config: Config) -> None:
+    logger.info("initializing database: start")
+    async with aiosqlite.connect(database=config.db_uri) as db:
+        await create_tables_if_needed(db=db)
+    logger.info("initializing database: end")
+
+
+async def create_tables_if_needed(db: Connection) -> None:
+    await create_table_if_needed(table=Tables.reminders, db=db)
+
+
 async def create_table_if_needed(table: Table, db: Connection) -> None:
     primary_key = table.primary_key_field
     other_fields = [field for field in table.fields if field != primary_key]
@@ -40,12 +56,8 @@ async def create_table_if_needed(table: Table, db: Connection) -> None:
     await db.execute(query)
 
     index_name = f"idx_{table.name}_id"
-    query = f"CREATE UNIQUE INDEX {index_name} ON {table.name}(id);"
+    query = f"CREATE UNIQUE INDEX IF NOT EXISTS {index_name} ON {table.name}(id);"
     await db.execute(query)
-
-
-async def create_tables_if_needed(db: Connection) -> None:
-    await create_table_if_needed(table=Tables.reminders, db=db)
 
 
 async def read_all_reminders(db: Connection) -> list[Reminder]:
@@ -90,6 +102,7 @@ async def insert_reminder(reminder: Reminder, db: Connection) -> None:
     params = (reminder.id, now, json_str)
     try:
         await db.execute(sql=query, parameters=params)
+        await db.commit()
     except sqlite3.IntegrityError:
         raise ReminderIdMustBeUnique(
             "cannot insert reminder because there already is a reminder with the same ID in the DB"

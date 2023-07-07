@@ -1,37 +1,29 @@
 import asyncio
-import datetime
+import os
 
 from src.adapters.clients.oye import OyeClient
 from src.config import get_config
-from src.domain.reminders import Once
-from src.main import Reminder
+
+os.environ["OYE_API_HOST"] = "localhost"
 
 
 async def amain() -> None:
     config = get_config()
 
     async with OyeClient(config=config) as oye:
-        reminders = await oye.get_reminders()
+        # reminders = await oye.get_reminders()
 
-        for i, reminder in enumerate(reminders):
-            print(i, reminder)
+        # for i, reminder in enumerate(reminders):
+        #     print(i, reminder)
 
-        print("--------")
+        # print("--------")
 
-        now = datetime.datetime.now(tz=datetime.timezone.utc)
-        later = now + datetime.timedelta(seconds=2)
-        reminder = Reminder(
-            id="id_new_reminder",
-            description="gooo!!",
-            schedule=Once(at=later),
-        )
+        await oye.add_reminder(utterance="do foo in 5 mins")
 
-        await oye.add_reminder(reminder=reminder)
+        # reminders = await oye.get_reminders()
 
-        reminders = await oye.get_reminders()
-
-        for i, reminder in enumerate(reminders):
-            print(i, reminder)
+        # for i, reminder in enumerate(reminders):
+        #     print(i, reminder)
 
 
 def main() -> None:

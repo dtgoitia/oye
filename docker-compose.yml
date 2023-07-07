@@ -13,8 +13,8 @@ services:
       - "5000:5000"
     environment:
       - DEBUG=true
-      - DB_PATH=${DB_PATH}
-      - "NATS_URL=${NATS_URL:-nats://nats:4222}"
+      - DB_PATH=${DB_PATH:-oye-api-local.sqlite}
+      - NATS_URL=${NATS_URL:-nats://nats:4222}
     volumes:
       - ./api:/app
     depends_on:
@@ -33,7 +33,7 @@ services:
       - "5000:5000"
     environment:
       - DEBUG=false
-      - DB_PATH=${DB_PATH}
+      - DB_PATH=${DB_PATH:-oye-api.sqlite}
     volumes:
       - ./api:/app
     # healthcheck:

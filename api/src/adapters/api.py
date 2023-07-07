@@ -1,3 +1,6 @@
+import asyncio
+import logging
+
 import aiosqlite
 from apischema import serialize
 from sanic import Request, Sanic
@@ -6,7 +9,7 @@ from sanic.log import logger
 from sanic.response import JSONResponse, json
 
 from src import domain, use_cases
-from src.adapters.clients import nats
+from src.adapters.clients import db, nats
 from src.config import get_config
 from src.domain.inference import infer_reminder
 from src.main import Engine
@@ -40,6 +43,8 @@ async def get_all_reminders(_: Request) -> JSONResponse:
 
 @api.post(ApiRoutes.reminder)
 async def create_reminder(request: Request) -> JSONResponse | errors.BadRequest:
+    config = get_config()
+
     try:
         utterance: str = request.json["utterance"]
     except (AttributeError, TypeError, KeyError):
@@ -58,7 +63,15 @@ async def create_reminder(request: Request) -> JSONResponse | errors.BadRequest:
 
 
 if __name__ == "__main__":
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s %(levelname)-8s %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
+    )
     config = get_config()
+
+    asyncio.run(db.initialize(config=config))
+
     api.run(
         host=config.host,
         port=config.port,

@@ -1,10 +1,10 @@
 import aiohttp
-from apischema import deserialize, serialize
+from apischema import deserialize
 
 from src.adapters.api import ApiRoutes
 from src.config import Config
 from src.main import Reminder
-from src.model import JsonDict
+from src.model import JsonDict, Utterance
 
 
 class ContextManagerNeeded(Exception):
@@ -51,6 +51,5 @@ class OyeClient:
         reminders = payload["reminders"]
         return deserialize(list[Reminder], reminders)
 
-    async def add_reminder(self, reminder: Reminder) -> None:
-        data = serialize(reminder)
-        await self._post(url=ApiRoutes.reminder, data=data)
+    async def add_reminder(self, utterance: Utterance) -> None:
+        await self._post(url=ApiRoutes.reminder, data={"utterance": utterance})

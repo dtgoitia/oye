@@ -21,7 +21,7 @@ class ConfigError(Exception):
     ...
 
 
-def env_var_to_str(name: str) -> str:
+def mandatory_env_var_to_str(name: str) -> str:
     if value := os.environ.get(name):
         return value
 
@@ -56,9 +56,9 @@ def get_config() -> Config:
     config = Config(
         debug_mode=env_var_to_bool("DEBUG", False),
         engine_tick_delta=5,
-        host="0.0.0.0",
+        host=os.environ.get("OYE_API_HOST", "0.0.0.0"),
         port=5000,
-        db_uri=env_var_to_str("DB_PATH"),
+        db_uri=mandatory_env_var_to_str("DB_PATH"),
     )
 
     return config
