@@ -40,12 +40,16 @@ async def get_all_reminders(_: Request) -> JSONResponse:
 
 @api.post(ApiRoutes.reminder)
 async def create_reminder(request: Request) -> JSONResponse | errors.BadRequest:
-    utterance: str = request.json["utterance"]
+    try:
+        utterance: str = request.json["utterance"]
+    except (AttributeError, TypeError, KeyError):
+        raise errors.BadRequest('Expected a payload like this: {"utterance":"foo"}')
+
     try:
         new_reminder = infer_reminder(utterance=utterance)
     except domain.inference.InferenceFailed as error:
         logger.debug(f"{error.__class__.__name__}: {error}")
-        return errors.BadRequest("Could not understand utterance")
+        raise errors.BadRequest("Could not understand utterance")
 
     async with aiosqlite.connect(database=config.db_uri) as db:
         added = await use_cases.create_reminder(new_reminder, db=db)

@@ -58,7 +58,7 @@ def get_config() -> Config:
         engine_tick_delta=5,
         host="0.0.0.0",
         port=5000,
-        db_uri=env_var_to_str("DB_URL"),
+        db_uri=env_var_to_str("DB_PATH"),
     )
 
     return config
