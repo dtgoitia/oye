@@ -1,6 +1,7 @@
 PROJECT_NAME:=oye
 WEBAPP_NAME:=$(PROJECT_NAME)-webapp
 API_NAME:=$(PROJECT_NAME)-api-dev
+EVENT_HANDLER_NAME:=$(PROJECT_NAME)-event-handler-dev
 
 set_up_development_environment:
 	@echo ""
@@ -19,10 +20,12 @@ set_up_development_environment:
 	@echo ""
 	@echo Creating development docker images...
 	make rebuild_api
+	make rebuild_event_handler
 
 	@echo ""
 	@echo ""
-	@echo To start api:     make run_api
+	@echo To start api:            make run_api
+	@echo To start event handler:  make run_event_handler
 
 install_dev_tools:
 	pre-commit install  # pre-commit is (default)
@@ -66,6 +69,34 @@ rebuild_api:
 shell_into_api_container:
 	docker compose run --rm $(API_NAME) /bin/bash
 
-delete_local_db:
-	find ./api -maxdepth 1 -type f -name $(DB_PATH) -delete
-	touch ./api/$(DB_PATH)
+#===============================================================================
+#
+#   API
+#
+#===============================================================================
+
+run_event_handler:
+	docker compose up $(EVENT_HANDLER_NAME)
+
+lint_event_handler:
+	bash event_handler/bin/dev/lint
+
+test_event_handler:
+	docker compose run --rm $(EVENT_HANDLER_NAME) pytest -v .
+
+compile_event_handler_development_dependencies:
+	bash event_handler/bin/dev/compile_dev_deps
+
+compile_event_handler_production_dependencies:
+	bash event_handler/bin/dev/compile_prod_deps
+
+install_event_handler_development_dependencies:
+	bash event_handler/bin/dev/install_dev_deps
+
+rebuild_event_handler:
+	docker compose down
+	docker image rm $(EVENT_HANDLER_NAME) || (echo "No $(EVENT_HANDLER_NAME) found, all good."; exit 0)
+	docker compose build --no-cache $(EVENT_HANDLER_NAME)
+
+shell_into_event_handler_container:
+	docker compose run --rm $(EVENT_HANDLER_NAME) /bin/bash

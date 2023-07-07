@@ -39,31 +39,48 @@ repos:
     rev: v0.0.276
     hooks:
       - id: ruff
-        name: 'api: ruff'
+        name: 'ruff: api'
         files: '^api/(src|tests)/.*\.py'
         args: [--fix, --config=api/pyproject.toml]
+      - id: ruff
+        name: 'ruff: event_handler'
+        files: '^event_handler/(src|tests)/.*\.py'
+        args: [--fix, --config=event_handler/pyproject.toml]
 
   - repo: https://github.com/PyCQA/isort
     rev: 5.12.0  # make sure to match what goes in requirements/dev.txt
     hooks:
       - id: isort
-        name: 'api: isort'
+        name: 'isort: api'
         files: '^api/(src|tests)/.*\.py'
         args: [--settings-path=api/pyproject.toml]
+      - id: isort
+        name: 'isort: event_handler'
+        files: '^event_handler/(src|tests)/.*\.py'
+        args: [--settings-path=event_handler/pyproject.toml]
 
   - repo: https://github.com/ambv/black
     rev: 23.3.0  # make sure to match what goes in requirements/dev.txt
     hooks:
       - id: black
-        name: 'api: black'
+        name: 'black: api'
         files: '^api/(src|tests)/.*\.py'
         args: [--config=api/pyproject.toml]
+      - id: black
+        name: 'black: event_handler'
+        files: '^event_handler/(src|tests)/.*\.py'
+        args: [--config=event_handler/pyproject.toml]
 
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v1.4.1
     hooks:
       - id: mypy
-        name: 'api: mypy'
+        name: 'mypy: api'
         files: '^api/(src|tests)/.*\.py'
         args: [--config-file=api/pyproject.toml, --pretty, api]
+        pass_filenames: false  # do not pass files as arguments to the script
+      - id: mypy
+        name: 'mypy: event_handler'
+        files: '^event_handler/(src|tests)/.*\.py'
+        args: [--config-file=event_handler/pyproject.toml, --pretty, api]
         pass_filenames: false  # do not pass files as arguments to the script
