@@ -1,6 +1,7 @@
 PROJECT_NAME:=oye
 WEBAPP_NAME:=$(PROJECT_NAME)-webapp
 API_NAME:=$(PROJECT_NAME)-api-dev
+CLI_NAME:=$(PROJECT_NAME)-cli-dev
 EVENT_HANDLER_NAME:=$(PROJECT_NAME)-event-handler-dev
 
 set_up_development_environment:
@@ -13,6 +14,8 @@ set_up_development_environment:
 	@echo Installing Python dependencies outside of the container, so that the IDE can detect them
 	@# this step is necessary because otherwise docker compose creates a node_modules
 	@# folder with root permissions and outside-container build fails
+	cli/bin/dev/create_venv
+	cli/bin/dev/install_dev_deps
 	api/bin/dev/create_venv
 	api/bin/dev/install_dev_deps
 	event_handler/bin/dev/create_venv
@@ -21,11 +24,13 @@ set_up_development_environment:
 	@echo ""
 	@echo ""
 	@echo Creating development docker images...
+	make rebuild_cli
 	make rebuild_api
 	make rebuild_event_handler
 
 	@echo ""
 	@echo ""
+	@echo "To start cli:            make run_cli"
 	@echo "To start api:            make run_api"
 	@echo "To start event handler:  make run_event_handler"
 
@@ -66,6 +71,34 @@ rebuild_api:
 
 shell_into_api_container:
 	docker compose run --rm $(API_NAME) /bin/bash
+
+#===============================================================================
+#
+#   CLI
+#
+#===============================================================================
+
+run_cli:
+	docker compose up $(CLI_NAME)
+
+lint_cli:
+	cli/bin/dev/lint
+
+test_cli:
+	docker compose run --rm $(CLI_NAME) pytest -v .
+
+compile_and_install_cli_dev_deps:
+	cli/bin/dev/compile_prod_deps
+	cli/bin/dev/compile_dev_deps
+	cli/bin/dev/install_dev_deps
+
+rebuild_cli:
+	docker compose down
+	docker image rm $(CLI_NAME) || (echo "No $(CLI_NAME) found, all good."; exit 0)
+	docker compose build --no-cache $(CLI_NAME)
+
+shell_into_cli_container:
+	docker compose run --rm $(CLI_NAME) /bin/bash
 
 #===============================================================================
 #
