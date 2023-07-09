@@ -38,3 +38,6 @@ fi
 
 
 ~/.pyenv/versions/$target_python_version/bin/python -m venv "${venv_dir}"
+
+source $target_service/bin/dev/_activate_venv
+pip install --upgrade pip
