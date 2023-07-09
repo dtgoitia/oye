@@ -26,8 +26,8 @@ set_up_development_environment:
 
 	@echo ""
 	@echo ""
-	@echo To start api:            make run_api
-	@echo To start event handler:  make run_event_handler
+	@echo "To start api:            make run_api"
+	@echo "To start event handler:  make run_event_handler"
 
 install_dev_tools:
 	pre-commit install  # pre-commit is (default)
