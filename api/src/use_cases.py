@@ -2,7 +2,7 @@ import logging
 
 from aiosqlite import Connection
 
-from src.adapters.clients.db import ReminderIdMustBeUnique, insert_reminder
+from src.adapters.clients.db import ReminderIdMustBeUnique, insert_reminder, read_all_reminders
 from src.devex import UnexpectedScenario
 from src.domain.reminders import NewReminder, Reminder, generate_reminder_id
 
@@ -40,3 +40,8 @@ async def create_reminder(new_reminder: NewReminder, db: Connection) -> Reminder
         raise UnexpectedScenario("expected reminder to be not None")
 
     return reminder
+
+
+async def get_reminders(db: Connection) -> list[Reminder]:
+    reminders = await read_all_reminders(db=db)
+    return reminders

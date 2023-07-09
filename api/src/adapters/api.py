@@ -7,12 +7,13 @@ from sanic import Request, Sanic
 from sanic import exceptions as errors
 from sanic.log import logger
 from sanic.response import JSONResponse, json
+from sanic_ext import openapi
 
 from src import domain, use_cases
 from src.adapters.clients import db, nats
 from src.config import get_config
 from src.domain.inference import infer_reminder
-from src.main import Engine
+from src.model import Utterance
 
 api = Sanic.get_app(name="oye-api", force_create=True)
 
@@ -36,12 +37,15 @@ async def test_publish(_: Request) -> JSONResponse:
 
 @api.get(ApiRoutes.reminder)
 async def get_all_reminders(_: Request) -> JSONResponse:
-    engine: Engine = api.ctx.engine
-    reminders = list(engine.get_reminders())
-    return json({"reminders": serialize(reminders)})
+    config = get_config()
+
+    async with aiosqlite.connect(database=config.db_uri) as db:
+        reminders = await use_cases.get_reminders(db=db)
+        return json({"reminders": serialize(reminders)})
 
 
 @api.post(ApiRoutes.reminder)
+@openapi.body({"utterance": Utterance})
 async def create_reminder(request: Request) -> JSONResponse | errors.BadRequest:
     config = get_config()
 
