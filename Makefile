@@ -102,6 +102,27 @@ shell_into_cli_container:
 
 #===============================================================================
 #
+#   CLI v2
+#
+#===============================================================================
+
+install_cli_globally:
+	cli_v2/bin/dev/install_cli_globally
+
+uninstall_cli_globally:
+	cli_v2/bin/dev/uninstall_cli_globally
+
+run_cli_v2:
+	cli_v2/bin/run
+
+build_cli_v2:
+	cli_v2/bin/dev/build
+
+test_cli_v2:
+	cli_v2/bin/dev/test
+
+#===============================================================================
+#
 #   event handler
 #
 #===============================================================================

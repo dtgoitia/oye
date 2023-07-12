@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+set -eu
+
+target_service="cli_v2"
+current_dir="$(basename $(pwd))"
+
+if [[ "$current_dir" != "oye" ]]; then
+    echo "ERROR: you must execute this from the root of the repo" >&2
+    exit 1
+fi
+
+cd "${target_service}"
+
+cargo test
