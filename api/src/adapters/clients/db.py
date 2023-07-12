@@ -11,7 +11,9 @@ from aiosqlite import Connection
 from apischema import deserialize, serialize
 
 from src.config import Config
+from src.devex import UnexpectedScenario
 from src.domain.reminders import Reminder
+from src.model import ReminderId
 
 logger = logging.getLogger(__name__)
 
@@ -75,6 +77,62 @@ async def read_all_reminders(db: Connection) -> list[Reminder]:
         reminders.append(reminder)
 
     return reminders
+
+
+class DataIntegrityError(Exception):
+    ...
+
+
+async def read_reminder(db: Connection, reminder_id: ReminderId) -> Reminder | None:
+    table = Tables.reminders
+    query = f"SELECT * FROM {table.name} WHERE id = ?;"
+    params: tuple[ReminderId] = (reminder_id,)
+
+    result = await db.execute(query, params)
+    rows = list(await result.fetchall())
+
+    if not rows:
+        return None
+
+    if len(rows) > 1:
+        raise DataIntegrityError(
+            f"expected one Reminder with id {reminder_id!r}, but got {len(rows)} instead"
+        )
+
+    row = rows[0]
+
+    __, _, json_str = row
+    json_dict = json.loads(json_str)
+    reminder = deserialize(Reminder, json_dict)
+
+    return reminder
+
+
+async def delete_reminder(db: Connection, reminder_id: ReminderId) -> Reminder | None:
+    table = Tables.reminders
+
+    reminder = await read_reminder(db=db, reminder_id=reminder_id)
+    print("-----")
+    print(f"{reminder=}")
+    if not reminder:
+        return None
+
+    delete_query = f"DELETE FROM {table.name} WHERE id = ?;"
+    # query = f"delete from reminders where id = '{reminder_id}' RETURNING id;"
+    params: tuple[ReminderId] = (reminder_id,)
+
+    await db.execute(delete_query, params)
+    await db.commit()
+
+    after_deletion = await read_reminder(db=db, reminder_id=reminder_id)
+    print("-----")
+    print(f"{after_deletion=}")
+    if after_deletion is not None:
+        raise UnexpectedScenario(
+            f"expected to delete reminder {reminder_id!r} but it still present in the DB"
+        )
+
+    return reminder
 
 
 SqliteParams: TypeAlias = tuple
