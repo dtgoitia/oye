@@ -47,9 +47,9 @@ class OyeClient:
             return response_data
 
     async def get_reminders(self) -> list[Reminder]:
-        payload = await self._get(url=ApiRoutes.reminder)
+        payload = await self._get(url=ApiRoutes.reminders)
         reminders = payload["reminders"]
         return deserialize(list[Reminder], reminders)
 
     async def add_reminder(self, utterance: Utterance) -> None:
-        await self._post(url=ApiRoutes.reminder, data={"utterance": utterance})
+        await self._post(url=ApiRoutes.reminders, data={"utterance": utterance})

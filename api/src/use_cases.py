@@ -2,9 +2,14 @@ import logging
 
 from aiosqlite import Connection
 
-from src.adapters.clients.db import ReminderIdMustBeUnique, insert_reminder, read_all_reminders
+from src.adapters.clients.db import ReminderIdMustBeUnique
+from src.adapters.clients.db import delete_reminder as delete_reminder_from_db
+from src.adapters.clients.db import insert_reminder as insert_reminder_in_db
+from src.adapters.clients.db import read_all_reminders as read_all_reminders_from_db
+from src.adapters.clients.db import read_reminder as read_reminder_from_db
 from src.devex import UnexpectedScenario
 from src.domain.reminders import NewReminder, Reminder, generate_reminder_id
+from src.model import ReminderId
 
 logger = logging.getLogger(__name__)
 
@@ -20,7 +25,7 @@ async def create_reminder(new_reminder: NewReminder, db: Connection) -> Reminder
             # In the rare case of a collision of IDs, the DB will raise
             reminder_id = generate_reminder_id()
             reminder = new_reminder.to_reminder(id=reminder_id)
-            await insert_reminder(reminder, db=db)
+            await insert_reminder_in_db(reminder, db=db)
             break
         except ReminderIdMustBeUnique:
             # Just generate a new ID and retry
@@ -43,5 +48,15 @@ async def create_reminder(new_reminder: NewReminder, db: Connection) -> Reminder
 
 
 async def get_reminders(db: Connection) -> list[Reminder]:
-    reminders = await read_all_reminders(db=db)
+    reminders = await read_all_reminders_from_db(db=db)
+    return reminders
+
+
+async def get_reminder(reminder_id: ReminderId, db: Connection) -> Reminder | None:
+    reminders = await read_reminder_from_db(reminder_id=reminder_id, db=db)
+    return reminders
+
+
+async def delete_reminder(reminder_id: ReminderId, db: Connection) -> Reminder | None:
+    reminders = await delete_reminder_from_db(reminder_id=reminder_id, db=db)
     return reminders

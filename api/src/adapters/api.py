@@ -13,14 +13,15 @@ from src import domain, use_cases
 from src.adapters.clients import db, nats
 from src.config import get_config
 from src.domain.inference import infer_reminder
-from src.model import Utterance
+from src.model import ReminderId, Utterance
 
 api = Sanic.get_app(name="oye-api", force_create=True)
 
 
 class ApiRoutes:
     health = "/health"
-    reminder = "/reminder"
+    reminders = "/reminder"
+    reminder = "/reminder/<reminder_id>"
     test_publish = "/pub"
 
 
@@ -36,6 +37,17 @@ async def test_publish(_: Request) -> JSONResponse:
 
 
 @api.get(ApiRoutes.reminder)
+async def get_reminder(_: Request, reminder_id: ReminderId) -> JSONResponse:
+    config = get_config()
+
+    async with aiosqlite.connect(database=config.db_uri) as db:
+        reminder = await use_cases.get_reminder(db=db, reminder_id=reminder_id)
+        if not reminder:
+            raise errors.NotFound(f"no reminder found with ID {reminder_id!r}")
+        return json({"reminder": serialize(reminder)})
+
+
+@api.get(ApiRoutes.reminders)
 async def get_all_reminders(_: Request) -> JSONResponse:
     config = get_config()
 
@@ -44,9 +56,9 @@ async def get_all_reminders(_: Request) -> JSONResponse:
         return json({"reminders": serialize(reminders)})
 
 
-@api.post(ApiRoutes.reminder)
+@api.post(ApiRoutes.reminders)
 @openapi.body({"utterance": Utterance})
-async def create_reminder(request: Request) -> JSONResponse | errors.BadRequest:
+async def create_reminder(request: Request) -> JSONResponse:
     config = get_config()
 
     try:
@@ -64,6 +76,19 @@ async def create_reminder(request: Request) -> JSONResponse | errors.BadRequest:
         added = await use_cases.create_reminder(new_reminder, db=db)
 
     return json({"added_reminder": serialize(added)})
+
+
+@api.delete(ApiRoutes.reminder)
+async def delete_reminder(_: Request, reminder_id: ReminderId) -> JSONResponse:
+    config = get_config()
+
+    async with aiosqlite.connect(database=config.db_uri) as db:
+        deleted = await use_cases.delete_reminder(db=db, reminder_id=reminder_id)
+
+        if not deleted:
+            raise errors.NotFound(f"nothing was deleted as no reminder was found with ID {reminder_id!r}")
+
+        return json({"deleted_reminder": serialize(deleted)})
 
 
 if __name__ == "__main__":

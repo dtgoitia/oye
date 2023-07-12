@@ -1,4 +1,3 @@
-import json
 from typing import Literal, TypeAlias
 
 import requests
@@ -40,8 +39,20 @@ class OyeClient:
         response = self._post(url="reminder", data={"utterance": utterance})
         return deserialize(Reminder, response["added_reminder"])
 
-    def delete(self, reminder_id: ReminderId) -> None:
-        self._delete(url=f"reminder/{reminder_id}")
+    def get_reminder(self, reminder_id: ReminderId) -> Reminder | None:
+        try:
+            response = self._get(url=f"reminder/{reminder_id}")
+        except requests.exceptions.HTTPError as e:
+            if e.response is not None and (e.response.status_code == 404):
+                return None
+            else:
+                raise
+
+        return deserialize(Reminder, response["reminder"])
+
+    def delete_reminder(self, reminder_id: ReminderId) -> Reminder | None:
+        response = self._delete(url=f"reminder/{reminder_id}")
+        return deserialize(Reminder, response["deleted_reminder"])
 
     def get_reminders(self) -> list[Reminder]:
         response = self._get(url="reminder")
