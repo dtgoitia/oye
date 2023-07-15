@@ -13,7 +13,9 @@ fn exit_with_error(message: String) -> () {
 fn main() {
     let config = match config::get_config() {
         Ok(config) => config,
-        Err(error) => return exit_with_error(error.reason),
+        Err(error) => {
+            return exit_with_error(error.reason);
+        }
     };
 
     let matches = Command::new("oye")
