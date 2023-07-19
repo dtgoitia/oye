@@ -7,6 +7,7 @@ from src.exhaustive_match import assert_never
 from src.model import Utterance
 
 ENDS_WITH_IN = re.compile(r"^(?P<message>.*) in (?P<amount>[0-9]+)\s*(?P<unit>[a-zA-Z]+)$")
+ENDS_WITH_AT = re.compile(r"^(?P<message>.*) at (?P<when>[0-9\.\:\sampAMP]+)$")
 
 
 class AmountMustBeNumeric(Exception):
@@ -67,9 +68,16 @@ def _get_now_utc() -> datetime.datetime:
     return datetime.datetime.now(tz=datetime.timezone.utc)
 
 
-def _infer_in_x_time(raw: str) -> tuple[str, Once]:
+def _infer_starts_with_in_x_time(raw: str) -> tuple[str, Once]:
     """
-    Return the Schedule for an utterance like 'in 3 mins'.
+    Return the Schedule for an utterance like 'in 3 mins ...'.
+    """
+    ...
+
+
+def _infer_ends_with_in_x_time(raw: str) -> tuple[str, Once]:
+    """
+    Return the Schedule for an utterance like '... in 3 mins'.
     """
 
     match = ENDS_WITH_IN.match(raw)
@@ -84,13 +92,51 @@ def _infer_in_x_time(raw: str) -> tuple[str, Once]:
     return message, schedule
 
 
+def _infer_start_with_at_x(raw: str) -> tuple[str, Once]:
+    """
+    Return the Schedule for an utterance like 'at 8.32am ...'.
+    """
+    ...
+
+
+def _infer_ends_with_at_x(raw: str) -> tuple[str, Once]:
+    """
+    Return the Schedule for an utterance like '... at 8.32am'.
+    """
+
+    match = ENDS_WITH_AT.match(raw)
+    if not match:
+        raise InferenceFailed(f"expected to end with 'at <time_pattern>', but got {raw} instead")
+
+    message = match.group("message")
+    when = match.group("when")
+
+
 def _infer_schedule(utterance: Utterance) -> tuple[str, Schedule]:
     """
     Takes human friendly texts and transforms them into something that can be scheduled
 
     The interpreter is timezone aware.
     """
-    return _infer_in_x_time(raw=utterance)
+    try:
+        return _infer_starts_with_in_x_time(raw=utterance)
+    except InferenceFailed:
+        ...
+
+    try:
+        return _infer_ends_with_in_x_time(raw=utterance)
+    except InferenceFailed:
+        ...
+
+    try:
+        return _infer_start_with_at_x(raw=utterance)
+    except InferenceFailed:
+        ...
+
+    try:
+        return _infer_ends_with_at_x(raw=utterance)
+    except InferenceFailed:
+        ...
 
     # yesterday = datetime.datetime.today() - datetime.timedelta(days=1)
     # tomorrow = datetime.datetime.today() + datetime.timedelta(days=1)
