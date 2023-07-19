@@ -74,34 +74,6 @@ shell_into_api_container:
 
 #===============================================================================
 #
-#   CLI
-#
-#===============================================================================
-
-run_cli:
-	docker compose up $(CLI_NAME)
-
-lint_cli:
-	cli/bin/dev/lint
-
-test_cli:
-	docker compose run --rm $(CLI_NAME) pytest -v .
-
-compile_and_install_cli_dev_deps:
-	cli/bin/dev/compile_prod_deps
-	cli/bin/dev/compile_dev_deps
-	cli/bin/dev/install_dev_deps
-
-rebuild_cli:
-	docker compose down
-	docker image rm $(CLI_NAME) || (echo "No $(CLI_NAME) found, all good."; exit 0)
-	docker compose build --no-cache $(CLI_NAME)
-
-shell_into_cli_container:
-	docker compose run --rm $(CLI_NAME) /bin/bash
-
-#===============================================================================
-#
 #   CLI v2
 #
 #===============================================================================
