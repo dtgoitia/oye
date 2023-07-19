@@ -2,7 +2,7 @@
 
 set -eu
 
-target_service="cli_v2"
+target_service="cli"
 current_dir="$(basename $(pwd))"
 
 if [[ "$current_dir" != "oye" ]]; then
@@ -12,4 +12,4 @@ fi
 
 cd "${target_service}"
 
-cargo install --path .
+cargo test
