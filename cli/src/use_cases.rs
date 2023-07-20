@@ -1,9 +1,10 @@
+use chrono::Local;
 use std::collections::HashMap;
 
 use crate::{
     config::Config,
     exit_with_error,
-    oye::{OyeClient, Reminder, ReminderId},
+    oye::{IsoTimezone, OyeClient, Reminder, ReminderId},
 };
 
 pub fn list_all_reminders(config: &Config) -> () {
@@ -39,8 +40,10 @@ fn input(message: &str) -> String {
 pub fn create_reminder(config: &Config) -> () {
     let utterance = input("Type reminder:");
 
+    let timezone = get_local_timezone();
+
     let client = OyeClient::new(&config);
-    match client.create_reminder(utterance) {
+    match client.create_reminder(utterance, timezone) {
         Ok(reminder) => println!("Reminder successfully created, reminder={:?}", reminder),
         Err(error) => {
             return exit_with_error(format!("failed to add reminder, reason: {:?}", error))
@@ -135,4 +138,14 @@ pub fn delete_reminder_interactive(config: &Config) -> () {
         };
     }
     // TODO: call API
+}
+
+fn get_local_timezone() -> IsoTimezone {
+    let mut iso_t = Local::now().to_rfc3339();
+
+    // drop all chars but the last 6 ones
+    let len = iso_t.len() - 6;
+    iso_t.drain(0..len);
+
+    iso_t.to_string()
 }

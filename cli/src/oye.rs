@@ -80,8 +80,15 @@ impl OyeClient {
         Ok(payload.reminders)
     }
 
-    pub fn create_reminder(&self, utterance: Utterance) -> Result<Reminder, OyeClientError> {
-        let payload = CreateReminderRequestPayload { utterance };
+    pub fn create_reminder(
+        &self,
+        utterance: Utterance,
+        timezone: IsoTimezone,
+    ) -> Result<Reminder, OyeClientError> {
+        let payload = CreateReminderRequestPayload {
+            utterance,
+            timezone,
+        };
         let body = match self.post("reminder", serde_jsonrc::to_string(&payload).unwrap()) {
             Ok(response) => {
                 let status = response.status();
@@ -151,6 +158,7 @@ impl OyeClient {
 pub type ReminderId = String;
 pub type ReminderDescription = String;
 pub type Utterance = String;
+pub type IsoTimezone = String;
 
 #[derive(Debug, Deserialize)]
 pub struct Reminder {
@@ -171,6 +179,7 @@ struct GetRemindersFailedResponse {
 #[derive(Debug, Serialize)]
 struct CreateReminderRequestPayload {
     utterance: Utterance,
+    timezone: IsoTimezone,
 }
 
 #[derive(Debug, Deserialize)]
