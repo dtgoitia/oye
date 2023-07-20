@@ -12,7 +12,7 @@ from sanic_ext import openapi
 from src import domain, use_cases
 from src.adapters.clients import db, nats
 from src.config import get_config
-from src.domain.inference import infer_reminder
+from src.domain.inference import infer_reminder, infer_timezone
 from src.model import ReminderId, Utterance
 
 api = Sanic.get_app(name="oye-api", force_create=True)
@@ -63,11 +63,18 @@ async def create_reminder(request: Request) -> JSONResponse:
 
     try:
         utterance: str = request.json["utterance"]
+        raw_tz: str = request.json["timezone"]
     except (AttributeError, TypeError, KeyError):
-        raise errors.BadRequest('Expected a payload like this: {"utterance":"foo"}')
+        raise errors.BadRequest('Expected a payload like this: {"utterance":"foo","timezone":"+02:00"}')
 
     try:
-        new_reminder = infer_reminder(utterance=utterance)
+        tz = infer_timezone(raw=raw_tz)
+    except domain.inference.InferenceFailed as error:
+        logger.debug(f"{error.__class__.__name__}: {error}")
+        raise errors.BadRequest("Could not understand timezone")
+
+    try:
+        new_reminder = infer_reminder(utterance=utterance, tz=tz)
     except domain.inference.InferenceFailed as error:
         logger.debug(f"{error.__class__.__name__}: {error}")
         raise errors.BadRequest("Could not understand utterance")

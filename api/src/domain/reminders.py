@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from typing import Iterator, Protocol, TypeAlias
 
 from src.domain.ids import generate_id
-from src.model import JsonDict, ReminderId
+from src.model import IsoTimezone, JsonDict, ReminderId
 
 """
 Moment in which a user will get notified regarding a specific Reminder.
@@ -43,13 +43,14 @@ class Once(Schedulable):
     _type = "once"
 
     at: datetime.datetime
+    creation_timezone: IsoTimezone
 
     @property
     def next_occurrence(self) -> Occurrence:
         return self.at
 
     def to_json(self) -> JsonDict:
-        return {"at": self.at.isoformat()}
+        return {"at": self.at.isoformat(), "creation_timezone": self.creation_timezone}
 
 
 @dataclass(frozen=True)
