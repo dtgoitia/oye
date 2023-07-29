@@ -5,6 +5,8 @@ use crate::oye::OyeApiBaseUrl;
 use reqwest::Url;
 use serde::Deserialize;
 
+const CONFIG_PATH: &str = ".config/oye/config.yaml";
+
 #[derive(Debug)]
 pub struct Config {
     pub oye_api_url: OyeApiBaseUrl,
@@ -30,11 +32,11 @@ pub enum ConfigError {
 }
 
 fn load_config_from_user_config_file() -> Result<ConfigFile, String> {
-    // try to load from config file in ~/.config/oye.yml
+    // first try to load from config file
     let home_str = std::env::var("HOME")
         .expect("could not find HOME environment variable, are you in Linux/Mac?");
     let home = std::path::Path::new(&home_str);
-    let path = home.join(".config/oye/config.yaml");
+    let path = home.join(CONFIG_PATH.to_string());
 
     if path.exists() == false {
         return Err(format!("config file not found: {}", path.to_str().unwrap()));
@@ -76,7 +78,7 @@ fn get_url_from_env_var(key: &str) -> Result<Url, ConfigError> {
 }
 
 pub fn get_config() -> Result<Config, Error> {
-    // try to load from config file in ~/.config/oye.yml
+    // first try to load from config file
     let config_file = match load_config_from_user_config_file() {
         Ok(config) => Some(config),
         Err(reason) => {
@@ -91,7 +93,8 @@ pub fn get_config() -> Result<Config, Error> {
         Ok(url) => url,
         Err(ConfigError::MissingEnvironmentVariable(env_var_name)) => {
             let api_url_not_set = format!(
-                "oye API URL is not set, please add it to ~/.config/oye.yaml or as {}",
+                "oye API URL is not set, please add it to ~/{} or as {}",
+                CONFIG_PATH.to_string(),
                 env_var_name
             );
 
