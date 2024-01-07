@@ -63,3 +63,14 @@ services:
       - ./event_handler:/app
     depends_on:
       - nats
+
+  db:
+    image: 'postgres:16.1-alpine3.19'
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-username}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+      POSTGRES_DB: ${POSTGRES_DB:-default_database} # automatically created at first launch
+    volumes:
+      - ./db-data/:/var/lib/postgresql/data/

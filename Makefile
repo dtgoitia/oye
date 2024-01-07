@@ -120,3 +120,13 @@ rebuild_event_handler:
 
 shell_into_event_handler_container:
 	docker compose run --rm $(EVENT_HANDLER_NAME) /bin/bash
+
+
+#===============================================================================
+#
+#   DB
+#
+#===============================================================================
+
+run_db:
+	docker compose up db
