@@ -54,6 +54,9 @@ uninstall_dev_tools:
 run_api:
 	docker compose up $(API_NAME)
 
+run_telegram_bot:
+	docker compose run --rm $(API_NAME) python -m src.adapters.telegram_bot
+
 run_reminder_dispatcher:
 	docker compose run --rm $(API_NAME) python -m src.adapters.cli_dispatch_reminders
 

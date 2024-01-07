@@ -31,11 +31,14 @@ async def amain(config: Config) -> None:
                     #    [      3     ]
                     [
                         # https://core.telegram.org/bots/api#inlinekeyboardbutton
-                        InlineKeyboardButton(text="foo", url="https://example.com"),
-                        InlineKeyboardButton(text="bar", url="https://example.com"),
+                        InlineKeyboardButton(text="1m", callback_data="snooze:1m"),
+                        InlineKeyboardButton(text="2m", callback_data="snooze:2m"),
+                        InlineKeyboardButton(text="3m", callback_data="snooze:3m"),
                     ],
                     [
-                        InlineKeyboardButton(text="baz", callback_data="button_3_pressed"),
+                        InlineKeyboardButton(text="10m", callback_data="snooze:10m"),
+                        InlineKeyboardButton(text="1h", callback_data="snooze:1h"),
+                        InlineKeyboardButton(text="1d", callback_data="snooze:1d"),
                     ],
                 ],
             ),

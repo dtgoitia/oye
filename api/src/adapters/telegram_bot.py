@@ -1,32 +1,28 @@
+import datetime
 import logging
 import os
 
 from telegram import Update
-from telegram.ext import Application, ApplicationBuilder, CommandHandler, ContextTypes
+from telegram.ext import ApplicationBuilder, CallbackQueryHandler, CommandHandler, ContextTypes
 
 from src.config import get_config
 
 
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     chat_id = update.effective_chat.id
     print(f"\n\n{chat_id=}\n\n")
-    # await context.bot.send_message(chat_id=chat_id, text="foo")
-    # await context.bot.send_message(chat_id=chat_id, text="I'm a bot, please talk to me!")
 
 
-# async def send_message(application: Application, message: str) -> None:
-#     await application.bot.send_message(chat_id=185639289, text=message)
+async def snooze(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    chat_id = update.effective_chat.id
+    query = update.callback_query.data
+    print(f"\n{query=}\n")
 
+    # TODO: update next_ocurrence in DB
+    next_occurrence = datetime.datetime.now(tz=datetime.timezone.utc)
 
-async def send_message(chat_id: Application, message: str) -> None:
-    application = ApplicationBuilder().token(os.environ["TELEGRAM_API_TOKEN"]).build()
-    await application.bot.send_message(chat_id=chat_id, text=message)
-
-
-"""
->>> update.effective_chat
-Chat(first_name='David', id=185639289, type=<ChatType.PRIVATE>, username='dtgoitia')
-"""
+    # TODO: edit previous message and remove buttons
+    await context.bot.send_message(chat_id=chat_id, text=f"snoozed until {next_occurrence}")
 
 
 if __name__ == "__main__":
@@ -39,7 +35,12 @@ if __name__ == "__main__":
 
     application = ApplicationBuilder().token(os.environ["TELEGRAM_API_TOKEN"]).build()
 
-    start_handler = CommandHandler("start", start)
-    application.add_handler(start_handler)
+    application.add_handler(CommandHandler(command="start", callback=start))
+    application.add_handler(
+        CallbackQueryHandler(
+            callback=snooze,
+            pattern="snooze:.*",  # used as ReGex to match incoming `callback_data`
+        )
+    )
 
     application.run_polling()
