@@ -14,11 +14,8 @@ services:
     environment:
       - DEBUG=true
       - DB_PATH=${DB_PATH:-oye-api-local.sqlite}
-      - NATS_URL=${NATS_URL:-nats://nats:4222}
     volumes:
       - ./api:/app
-    depends_on:
-      - nats
     # healthcheck:
 
   oye-api:
@@ -38,17 +35,6 @@ services:
       - ./api:/app
     # healthcheck:
 
-  nats:
-    image: 'nats:2.9.19'
-    # entrypoint
-    # expose:  # not visible to host, only to other containers
-    #   - "4222"
-    ports:
-      - "4222:4222"
-      - "8222:8222"
-    hostname: nats-server
-    # src: https://nats.io/blog/docker-compose-plus-nats/
-
   oye-event-handler-dev:
     build:
       context: ./event_handler
@@ -57,12 +43,8 @@ services:
     image: oye-event-handler-dev
     container_name: oye-event-handler-dev
     command: python -m src.adapters.event_handler
-    environment:
-      - "NATS_URL=${NATS_URL:-nats://nats:4222}"
     volumes:
       - ./event_handler:/app
-    depends_on:
-      - nats
 
   db:
     image: 'postgres:16.1-alpine3.19'

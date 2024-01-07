@@ -10,7 +10,7 @@ from sanic.response import JSONResponse, json
 from sanic_ext import openapi
 
 from src import domain, use_cases
-from src.adapters.clients import db, nats
+from src.adapters.clients import db
 from src.config import get_config
 from src.domain.inference import infer_reminder, infer_timezone
 from src.model import ReminderId, Utterance
@@ -28,12 +28,6 @@ class ApiRoutes:
 @api.get(ApiRoutes.health)
 async def health(_: Request) -> JSONResponse:
     return json({"health": True})
-
-
-@api.get(ApiRoutes.test_publish)
-async def test_publish(_: Request) -> JSONResponse:
-    await nats.publish("boo")
-    return json({"published": True})
 
 
 @api.get(ApiRoutes.reminder)

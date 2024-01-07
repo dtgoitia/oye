@@ -2,5 +2,4 @@ aiohttp
 aiosqlite
 apischema
 nanoid
-nats-py
 sanic[ext]

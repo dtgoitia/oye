@@ -1,37 +1,31 @@
-aiofiles==23.1.0
+aiofiles==23.2.1
     # via sanic
-aiohttp==3.8.4
+aiohttp==3.9.1
     # via -r api/requirements/prod.in
 aiosignal==1.3.1
     # via aiohttp
 aiosqlite==0.19.0
     # via -r api/requirements/prod.in
-anyio==3.7.1
-    # via httpcore
-apischema==0.18.0
+anyio==4.2.0
+    # via httpx
+apischema==0.18.1
     # via -r api/requirements/prod.in
-asttokens==2.2.1
+asttokens==2.4.1
     # via stack-data
-async-timeout==4.0.2
+attrs==23.2.0
     # via aiohttp
-attrs==23.1.0
-    # via aiohttp
-backcall==0.2.0
-    # via ipython
-black==23.3.0
+black==23.12.1
     # via -r api/requirements/dev.in
-build==0.10.0
+build==1.0.3
     # via pip-tools
-certifi==2023.5.7
+certifi==2023.11.17
     # via
     #   httpcore
     #   httpx
     #   requests
-charset-normalizer==3.1.0
-    # via
-    #   aiohttp
-    #   requests
-click==8.1.4
+charset-normalizer==3.3.2
+    # via requests
+click==8.1.7
     # via
     #   black
     #   pip-tools
@@ -39,13 +33,13 @@ decorator==5.1.1
     # via
     #   ipdb
     #   ipython
-executing==1.2.0
+executing==2.0.1
     # via stack-data
-flake8==6.0.0
+flake8==7.0.0
     # via -r api/requirements/dev.in
-freezegun==1.2.2
+freezegun==1.4.0
     # via pytest-freezegun
-frozenlist==1.3.3
+frozenlist==1.4.1
     # via
     #   aiohttp
     #   aiosignal
@@ -55,27 +49,27 @@ html5tagger==1.3.0
     # via
     #   sanic
     #   tracerite
-httpcore==0.16.3
+httpcore==1.0.2
     # via httpx
-httptools==0.6.0
+httptools==0.6.1
     # via sanic
-httpx==0.23.3
+httpx==0.26.0
     # via sanic-testing
-idna==3.4
+idna==3.6
     # via
     #   anyio
+    #   httpx
     #   requests
-    #   rfc3986
     #   yarl
 iniconfig==2.0.0
     # via pytest
 ipdb==0.13.13
     # via -r api/requirements/dev.in
-ipython==8.14.0
+ipython==8.19.0
     # via ipdb
-isort==5.12.0
+isort==5.13.2
     # via -r api/requirements/dev.in
-jedi==0.18.2
+jedi==0.19.1
     # via
     #   ipython
     #   pudb
@@ -88,7 +82,7 @@ multidict==6.0.4
     #   aiohttp
     #   sanic
     #   yarl
-mypy==1.4.1
+mypy==1.8.0
     # via -r api/requirements/dev.in
 mypy-extensions==1.0.0
     # via
@@ -96,9 +90,7 @@ mypy-extensions==1.0.0
     #   mypy
 nanoid==2.0.0
     # via -r api/requirements/prod.in
-nats-py==2.3.1
-    # via -r api/requirements/prod.in
-packaging==23.1
+packaging==23.2
     # via
     #   black
     #   build
@@ -106,62 +98,58 @@ packaging==23.1
     #   pytest
 parso==0.8.3
     # via jedi
-pathspec==0.11.1
+pathspec==0.12.1
     # via black
-pexpect==4.8.0
+pexpect==4.9.0
     # via ipython
-pickleshare==0.7.5
-    # via ipython
-pip-tools==6.14.0
+pip-tools==7.3.0
     # via -r api/requirements/dev.in
-platformdirs==3.8.1
+platformdirs==4.1.0
     # via black
-pluggy==1.2.0
+pluggy==1.3.0
     # via pytest
-prompt-toolkit==3.0.39
+prompt-toolkit==3.0.43
     # via ipython
 ptyprocess==0.7.0
     # via pexpect
-pudb==2022.1.3
+pudb==2023.1
     # via -r api/requirements/dev.in
 pure-eval==0.2.2
     # via stack-data
-pycodestyle==2.10.0
+pycodestyle==2.11.1
     # via flake8
-pyflakes==3.0.1
+pyflakes==3.2.0
     # via flake8
-pygments==2.15.1
+pygments==2.17.2
     # via
     #   ipython
     #   pudb
 pyproject-hooks==1.0.0
     # via build
-pytest==7.4.0
+pytest==7.4.4
     # via
     #   -r api/requirements/dev.in
     #   pytest-asyncio
     #   pytest-freezegun
-pytest-asyncio==0.21.0
+pytest-asyncio==0.23.3
     # via -r api/requirements/dev.in
 pytest-freezegun==0.4.2
     # via -r api/requirements/dev.in
 python-dateutil==2.8.2
     # via freezegun
-pyyaml==6.0
+pyyaml==6.0.1
     # via sanic-ext
 requests==2.31.0
     # via -r api/requirements/dev.in
-rfc3986[idna2008]==1.5.0
-    # via httpx
-ruff==0.0.277
+ruff==0.1.11
     # via -r api/requirements/dev.in
-sanic[ext]==23.3.0
+sanic[ext]==23.12.0
     # via -r api/requirements/prod.in
-sanic-ext==23.3.0
+sanic-ext==23.12.0
     # via sanic
-sanic-routing==22.8.0
+sanic-routing==23.12.0
     # via sanic
-sanic-testing==23.3.0
+sanic-testing==23.12.0
     # via -r api/requirements/dev.in
 six==1.16.0
     # via
@@ -170,37 +158,38 @@ six==1.16.0
 sniffio==1.3.0
     # via
     #   anyio
-    #   httpcore
     #   httpx
-stack-data==0.6.2
+stack-data==0.6.3
     # via ipython
-tracerite==1.1.0
+tracerite==1.1.1
     # via sanic
-traitlets==5.9.0
+traitlets==5.14.1
     # via
     #   ipython
     #   matplotlib-inline
-typing-extensions==4.7.1
-    # via mypy
-ujson==5.8.0
+typing-extensions==4.9.0
+    # via
+    #   mypy
+    #   sanic
+ujson==5.9.0
     # via sanic
-urllib3==2.0.3
+urllib3==2.1.0
     # via requests
-urwid==2.1.2
+urwid==2.4.1
     # via
     #   pudb
     #   urwid-readline
 urwid-readline==0.13
     # via pudb
-uvloop==0.17.0
+uvloop==0.19.0
     # via sanic
-wcwidth==0.2.6
+wcwidth==0.2.13
     # via prompt-toolkit
-websockets==11.0.3
+websockets==12.0
     # via sanic
-wheel==0.40.0
+wheel==0.42.0
     # via pip-tools
-yarl==1.9.2
+yarl==1.9.4
     # via aiohttp
 
 # The following packages are considered to be unsafe in a requirements file:
