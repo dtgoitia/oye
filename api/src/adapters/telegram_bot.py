@@ -1,3 +1,4 @@
+import asyncio
 import datetime
 import logging
 import os
@@ -7,6 +8,8 @@ from telegram import Update
 from telegram.ext import ApplicationBuilder, CallbackQueryHandler, CommandHandler, ContextTypes
 
 from src.config import get_config
+
+WAIT_TO_DELETE_SNOOZED_REMINDER = 4  # seconds
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -31,7 +34,9 @@ async def snooze(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         text=f"{previous_message.text}\n\nsnoozed until {next_occurrence}",
         reply_markup=None,  # remove buttons
     )
-    # TODO: think if you can
+
+    await asyncio.sleep(WAIT_TO_DELETE_SNOOZED_REMINDER)
+    await context.bot.delete_message(chat_id=chat_id, message_id=previous_message.id)
 
 
 if __name__ == "__main__":
