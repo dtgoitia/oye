@@ -53,8 +53,10 @@ httpcore==1.0.2
     # via httpx
 httptools==0.6.1
     # via sanic
-httpx==0.26.0
-    # via sanic-testing
+httpx==0.25.2
+    # via
+    #   python-telegram-bot
+    #   sanic-testing
 idna==3.6
     # via
     #   anyio
@@ -137,6 +139,8 @@ pytest-freezegun==0.4.2
     # via -r api/requirements/dev.in
 python-dateutil==2.8.2
     # via freezegun
+python-telegram-bot==20.7
+    # via -r api/requirements/prod.in
 pyyaml==6.0.1
     # via sanic-ext
 requests==2.31.0

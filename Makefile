@@ -1,6 +1,7 @@
 PROJECT_NAME:=oye
 WEBAPP_NAME:=$(PROJECT_NAME)-webapp
 API_NAME:=$(PROJECT_NAME)-api-dev
+DISPATCHER_NAME:=$(PROJECT_NAME)-dispatcher-dev
 CLI_NAME:=$(PROJECT_NAME)-cli-dev
 EVENT_HANDLER_NAME:=$(PROJECT_NAME)-event-handler-dev
 
@@ -52,6 +53,9 @@ uninstall_dev_tools:
 
 run_api:
 	docker compose up $(API_NAME)
+
+run_reminder_dispatcher:
+	docker compose run --rm $(API_NAME) python -m src.adapters.cli_dispatch_reminders
 
 lint_api:
 	api/bin/dev/lint
