@@ -95,35 +95,6 @@ test_cli:
 
 #===============================================================================
 #
-#   event handler
-#
-#===============================================================================
-
-run_event_handler:
-	docker compose up $(EVENT_HANDLER_NAME)
-
-lint_event_handler:
-	event_handler/bin/dev/lint
-
-test_event_handler:
-	docker compose run --rm $(EVENT_HANDLER_NAME) pytest -v .
-
-compile_and_install_event_handler_dev_deps:
-	event_handler/bin/dev/compile_prod_deps
-	event_handler/bin/dev/compile_dev_deps
-	event_handler/bin/dev/install_dev_deps
-
-rebuild_event_handler:
-	docker compose down
-	docker image rm $(EVENT_HANDLER_NAME) || (echo "No $(EVENT_HANDLER_NAME) found, all good."; exit 0)
-	docker compose build --no-cache $(EVENT_HANDLER_NAME)
-
-shell_into_event_handler_container:
-	docker compose run --rm $(EVENT_HANDLER_NAME) /bin/bash
-
-
-#===============================================================================
-#
 #   DB
 #
 #===============================================================================
