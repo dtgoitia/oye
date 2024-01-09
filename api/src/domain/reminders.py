@@ -30,7 +30,7 @@ class Schedulable(Protocol):
             "using the definition of the schedule and the current time, calculate next ocurrence"
         )
 
-    def to_json(self) -> JsonDict:
+    def to_jsondict(self) -> JsonDict:
         raise NotImplementedError("provide a valid JSON representation")
 
 
@@ -43,14 +43,17 @@ class Once(Schedulable):
     _type = "once"
 
     at: datetime.datetime
-    creation_timezone: IsoTimezone
+    # creation_timezone: IsoTimezone
 
     @property
     def next_occurrence(self) -> Occurrence:
         return self.at
 
-    def to_json(self) -> JsonDict:
-        return {"at": self.at.isoformat(), "creation_timezone": self.creation_timezone}
+    def to_jsondict(self) -> JsonDict:
+        return {
+            "at": self.at.isoformat(),
+            # "creation_timezone": self.creation_timezone,
+        }
 
 
 @dataclass(frozen=True)
@@ -76,8 +79,8 @@ class NewReminder:
     description: str
     schedule: Schedule
 
-    def to_json(self) -> JsonDict:
-        return {"description": self.description, "schedule": self.schedule.to_json()}
+    def to_jsondict(self) -> JsonDict:
+        return {"description": self.description, "schedule": self.schedule.to_jsondict()}
 
     def to_reminder(self, id: ReminderId) -> Reminder:
         return Reminder(id=id, description=self.description, schedule=self.schedule)
@@ -98,13 +101,10 @@ class Reminder:
     id: ReminderId
     description: str
     schedule: Once  # add more types here: Once | Recurring
-
-    @property
-    def next_occurrence(self) -> Occurrence:
-        return self.schedule.next_occurrence
+    next_occurrence: Occurrence | None = None
 
     def to_json(self) -> JsonDict:
-        return {"id": self.id, "description": self.description, "schedule": self.schedule.to_json()}
+        return {"id": self.id, "description": self.description, "schedule": self.schedule.to_jsondict()}
 
 
 def generate_reminder_id() -> ReminderId:

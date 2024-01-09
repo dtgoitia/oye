@@ -28,7 +28,7 @@ class Table:
 class Tables:
     reminders = Table(
         name="reminders",
-        fields=["id", "updated_at", "reminder"],
+        fields=["id", "description", "schedule", "next_occurrence"],
         primary_key_field="id",
     )
 
@@ -66,14 +66,15 @@ async def read_all_reminders(db: Connection) -> list[Reminder]:
     table = Tables.reminders
     query = f"SELECT * FROM {table.name};"
 
+    db.row_factory = aiosqlite.Row
+
     result = await db.execute(query)
     rows = list(await result.fetchall())
 
     reminders: list[Reminder] = []
     for row in rows:
-        __, _, json_str = row
-        json_dict = json.loads(json_str)
-        reminder = deserialize(Reminder, json_dict)
+        as_dict = {**row, "schedule": json.loads(row["schedule"])}
+        reminder = deserialize(Reminder, as_dict)
         reminders.append(reminder)
 
     return reminders
@@ -147,17 +148,18 @@ async def insert_reminder(reminder: Reminder, db: Connection) -> None:
     query = dedent(
         f"""
         INSERT INTO {table.name}({ ', '.join(table.fields) })
-        VALUES ({ ', '.join(['?' for _ in table.fields]) })
+        VALUES ({ ', '.join([f':{field}' for field in table.fields]) })
         ;
         """
     ).strip()
 
-    now = datetime.datetime.now().isoformat()
+    params = {
+        "id": reminder.id,
+        "description": reminder.description,
+        "schedule": json.dumps(reminder.schedule.to_jsondict()),
+        "next_occurrence": reminder.next_occurrence,
+    }
 
-    json_dict = serialize(reminder)
-    json_str = json.dumps(json_dict)
-
-    params = (reminder.id, now, json_str)
     try:
         await db.execute(sql=query, parameters=params)
         await db.commit()
@@ -169,21 +171,23 @@ async def insert_reminder(reminder: Reminder, db: Connection) -> None:
 
 async def upsert_reminder(reminder: Reminder, db: Connection) -> None:
     table = Tables.reminders
+
+    updatable_fields = [f for f in table.fields if f != "id"]
+
     query = dedent(
         f"""
         INSERT INTO {table.name}({ ', '.join(table.fields) })
-        VALUES ({ ', '.join(['?' for _ in table.fields]) })
-        ON CONFLICT(id) DO UPDATE SET
-            updated_at=?,
-            reminder=?
+        VALUES ({ ', '.join([f':{field}' for field in table.fields]) })
+        ON CONFLICT(id) DO UPDATE SET {', '.join([f'{field}=:{field}' for field in updatable_fields])}
         ;
         """
     ).strip()
 
-    now = datetime.datetime.now().isoformat()
+    params = {
+        "id": reminder.id,
+        "description": reminder.description,
+        "schedule": json.dumps(reminder.schedule.to_jsondict()),
+        "next_occurrence": reminder.next_occurrence,
+    }
 
-    json_dict = serialize(reminder)
-    json_str = json.dumps(json_dict)
-
-    params = (reminder.id, now, json_str, now, json_str)
     await db.execute(sql=query, parameters=params)
