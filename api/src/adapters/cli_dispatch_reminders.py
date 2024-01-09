@@ -1,6 +1,7 @@
 import asyncio
 import os
 
+import telegram
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder
 
@@ -9,9 +10,9 @@ from src.config import Config, get_config
 
 async def amain(config: Config) -> None:
     application = ApplicationBuilder().token(os.environ["TELEGRAM_API_TOKEN"]).build()
-    bot = application.bot
+    bot: telegram.Bot = application.bot
 
-    async def send_message(chat_id: str, message: str, reply_markup) -> None:
+    async def send_message(chat_id: str, message: str, reply_markup: InlineKeyboardMarkup) -> None:
         await bot.send_message(
             chat_id=chat_id,
             text=message,
@@ -21,6 +22,7 @@ async def amain(config: Config) -> None:
     # TODO:
     # get from DB all reminders whose `next_ocurrence` < now and dispatched = False
     # dispatch them to the telegram bot API so that Telegram pings user device
+    print(config)
     reminders = [
         dict(
             chat_id="-1001998360297",

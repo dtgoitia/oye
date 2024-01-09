@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from typing import Iterator, Protocol, TypeAlias
 
 from src.domain.ids import generate_id
-from src.model import IsoTimezone, JsonDict, ReminderId
+from src.model import JsonDict, ReminderId
 
 """
 Moment in which a user will get notified regarding a specific Reminder.
@@ -152,6 +152,10 @@ class ReminderRepository:
         result: dict[Occurrence, list[Reminder]] = {}
         for reminder in self._map.values():
             occurrence = reminder.next_occurrence
+
+            if occurrence is None:
+                continue
+
             if occurrence in result:
                 result[occurrence].append(reminder)
             else:

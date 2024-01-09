@@ -145,7 +145,7 @@ def _infer_at_time(raw: str, tz: datetime.timezone) -> Occurrence:
     return at
 
 
-def _infer_start_with_at_x(raw: str, tz=datetime.timezone) -> tuple[str, Once]:
+def _infer_start_with_at_x(raw: str, tz: datetime.timezone) -> tuple[str, Once]:
     """
     Return the Schedule for an utterance like 'at 8.32am ...'.
     """
@@ -160,7 +160,7 @@ def _infer_start_with_at_x(raw: str, tz=datetime.timezone) -> tuple[str, Once]:
     return message, Once(at=at)
 
 
-def _infer_ends_with_at_x(raw: str, tz=datetime.timezone) -> tuple[str, Once]:
+def _infer_ends_with_at_x(raw: str, tz: datetime.timezone) -> tuple[str, Once]:
     """
     Return the Schedule for an utterance like '... at 8.32am'.
     """
@@ -227,7 +227,7 @@ def infer_timezone(raw: IsoTimezone) -> datetime.timezone:
     if not match:
         raise InferenceFailed(f"expected a timezone-like string (e.g. '+02:00'), but got {raw} instead")
 
-    sign: Literal["+", "-"] = match.group("sign")
+    sign: Literal["+", "-"] = match.group("sign")  # type: ignore
     hours = int(match.group("hours"))
     mins = int(match.group("mins"))
 

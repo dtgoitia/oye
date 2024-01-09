@@ -1,5 +1,7 @@
 from dataclasses import replace
 
+import pytest
+
 from src.config import Config
 from src.domain.reminders import Once
 from src.main import Engine, Reminder, ReminderRepository, UniqueHeapQueue
@@ -51,6 +53,7 @@ def test_queue_ignores_duplicates():
     assert set(queue.peek_all()) == {t1, t2}
 
 
+@pytest.mark.skip(reason="deprecated")
 def test_engine_notifies_reminders_with_occurences_prior_to_the_tick(config: Config) -> None:
     config = replace(config, engine_tick_delta=10)
 

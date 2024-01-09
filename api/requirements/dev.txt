@@ -67,7 +67,7 @@ iniconfig==2.0.0
     # via pytest
 ipdb==0.13.13
     # via -r api/requirements/dev.in
-ipython==8.19.0
+ipython==8.20.0
     # via ipdb
 isort==5.13.2
     # via -r api/requirements/dev.in
@@ -147,7 +147,7 @@ requests==2.31.0
     # via -r api/requirements/dev.in
 ruff==0.1.11
     # via -r api/requirements/dev.in
-sanic[ext]==23.12.0
+sanic[ext]==23.12.1
     # via -r api/requirements/prod.in
 sanic-ext==23.12.0
     # via sanic
@@ -171,6 +171,8 @@ traitlets==5.14.1
     # via
     #   ipython
     #   matplotlib-inline
+types-requests==2.31.0.20240106
+    # via -r api/requirements/dev.in
 typing-extensions==4.9.0
     # via
     #   mypy
@@ -178,7 +180,9 @@ typing-extensions==4.9.0
 ujson==5.9.0
     # via sanic
 urllib3==2.1.0
-    # via requests
+    # via
+    #   requests
+    #   types-requests
 urwid==2.4.1
     # via
     #   pudb

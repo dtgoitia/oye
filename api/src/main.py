@@ -115,7 +115,7 @@ class Engine:
         else:
             breakpoint()
         added = self._man.add(reminder)
-        self._queue.add([added.next_occurrence])
+        self._queue.add([added.next_occurrence])  # type: ignore
         return added
 
     def get_reminders(self) -> Iterator[Reminder]:

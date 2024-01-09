@@ -11,3 +11,4 @@ pytest-freezegun
 requests
 ruff
 sanic-testing
+types-requests

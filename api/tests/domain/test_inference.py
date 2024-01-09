@@ -102,6 +102,6 @@ def test_infer_in_time(raw: str, expected: str) -> None:
         ("+00:00", 0),
     ),
 )
-def test_infer_timezone(raw: str, expected: str) -> None:
+def test_infer_timezone(raw: str, expected: int | float) -> None:
     tz = infer_timezone(raw=raw)
     assert tz == datetime.timezone(datetime.timedelta(hours=expected))

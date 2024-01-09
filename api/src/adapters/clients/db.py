@@ -1,4 +1,3 @@
-import datetime
 import json
 import logging
 import sqlite3
@@ -8,7 +7,7 @@ from typing import TypeAlias
 
 import aiosqlite
 from aiosqlite import Connection
-from apischema import deserialize, serialize
+from apischema import deserialize
 
 from src.config import Config
 from src.devex import UnexpectedScenario
@@ -62,6 +61,12 @@ async def create_table_if_needed(table: Table, db: Connection) -> None:
     await db.execute(query)
 
 
+def _row_to_reminder(row: sqlite3.Row) -> Reminder:
+    as_dict = {**row, "schedule": json.loads(row["schedule"])}
+    reminder = deserialize(Reminder, as_dict)
+    return reminder
+
+
 async def read_all_reminders(db: Connection) -> list[Reminder]:
     table = Tables.reminders
     query = f"SELECT * FROM {table.name};"
@@ -71,13 +76,7 @@ async def read_all_reminders(db: Connection) -> list[Reminder]:
     result = await db.execute(query)
     rows = list(await result.fetchall())
 
-    reminders: list[Reminder] = []
-    for row in rows:
-        as_dict = {**row, "schedule": json.loads(row["schedule"])}
-        reminder = deserialize(Reminder, as_dict)
-        reminders.append(reminder)
-
-    return reminders
+    return list(map(_row_to_reminder, rows))
 
 
 class DataIntegrityError(Exception):
@@ -86,10 +85,11 @@ class DataIntegrityError(Exception):
 
 async def read_reminder(db: Connection, reminder_id: ReminderId) -> Reminder | None:
     table = Tables.reminders
-    query = f"SELECT * FROM {table.name} WHERE id = ?;"
-    params: tuple[ReminderId] = (reminder_id,)
+    query = f"SELECT * FROM {table.name} WHERE id = :id;"
 
-    result = await db.execute(query, params)
+    db.row_factory = aiosqlite.Row
+
+    result = await db.execute(query, {"id": reminder_id})
     rows = list(await result.fetchall())
 
     if not rows:
@@ -102,9 +102,7 @@ async def read_reminder(db: Connection, reminder_id: ReminderId) -> Reminder | N
 
     row = rows[0]
 
-    __, _, json_str = row
-    json_dict = json.loads(json_str)
-    reminder = deserialize(Reminder, json_dict)
+    reminder = _row_to_reminder(row=row)
 
     return reminder
 
@@ -113,8 +111,6 @@ async def delete_reminder(db: Connection, reminder_id: ReminderId) -> Reminder |
     table = Tables.reminders
 
     reminder = await read_reminder(db=db, reminder_id=reminder_id)
-    print("-----")
-    print(f"{reminder=}")
     if not reminder:
         return None
 
@@ -126,8 +122,6 @@ async def delete_reminder(db: Connection, reminder_id: ReminderId) -> Reminder |
     await db.commit()
 
     after_deletion = await read_reminder(db=db, reminder_id=reminder_id)
-    print("-----")
-    print(f"{after_deletion=}")
     if after_deletion is not None:
         raise UnexpectedScenario(
             f"expected to delete reminder {reminder_id!r} but it still present in the DB"
