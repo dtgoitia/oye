@@ -1,4 +1,5 @@
 import asyncio
+import logging
 import os
 
 import aiosqlite
@@ -70,4 +71,5 @@ def main() -> None:
 
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO)
     main()

@@ -89,12 +89,14 @@ class DataIntegrityError(Exception):
 
 
 async def read_reminder(db: Connection, reminder_id: ReminderId) -> Reminder | None:
-    table = Tables.reminders
-    query = f"SELECT * FROM {table.name} WHERE id = :id;"
-
     db.row_factory = aiosqlite.Row
 
-    result = await db.execute(query, {"id": reminder_id})
+    table = Tables.reminders
+    query = f"SELECT * FROM {table.name} WHERE id = :id;"
+    parameters = {"id": reminder_id}
+
+    logger.info(f"running query:\n{query}\n\nwith parameters: {parameters}")
+    result = await db.execute(query, parameters=parameters)
     rows = list(await result.fetchall())
 
     if not rows:
@@ -113,22 +115,25 @@ async def read_reminder(db: Connection, reminder_id: ReminderId) -> Reminder | N
 
 
 async def read_reminders_from_db_to_dispatch(db: Connection) -> list[Reminder]:
+    db.row_factory = aiosqlite.Row
+
     table = Tables.reminders
     query = dedent(
         f"""
         SELECT * FROM {table.name}
         WHERE dispatched IS FALSE
-          AND next_occurrence IS NULL
-          AND next_occurrence <= :now_utc
+          --AND next_occurrence IS NOT NULL
+          --AND next_occurrence <= :now_utc
         ;
         """
     ).strip()
-    print(query)
+    parameters = {"now_utc": datetime.now(tz=timezone.utc)}
 
-    db.row_factory = aiosqlite.Row
-
-    result = await db.execute(query, {"now_utc": datetime.now(tz=timezone.utc)})
+    logger.info(f"running query:\n{query}\n\nwith parameters: {parameters}")
+    result = await db.execute(query, parameters=parameters)
     rows = list(await result.fetchall())
+
+    logger.info(f"Found {len(rows)} reminder(s) that need to be dispatched")
 
     return list(map(_row_to_reminder, rows))
 
