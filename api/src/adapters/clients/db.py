@@ -2,6 +2,7 @@ import json
 import logging
 import sqlite3
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from textwrap import dedent
 from typing import TypeAlias
 
@@ -27,7 +28,7 @@ class Table:
 class Tables:
     reminders = Table(
         name="reminders",
-        fields=["id", "description", "schedule", "next_occurrence"],
+        fields=["id", "description", "schedule", "next_occurrence", "dispatched"],
         primary_key_field="id",
     )
 
@@ -62,7 +63,11 @@ async def create_table_if_needed(table: Table, db: Connection) -> None:
 
 
 def _row_to_reminder(row: sqlite3.Row) -> Reminder:
-    as_dict = {**row, "schedule": json.loads(row["schedule"])}
+    as_dict = {
+        **row,
+        "schedule": json.loads(row["schedule"]),
+        "dispatched": bool(row["dispatched"]),
+    }
     reminder = deserialize(Reminder, as_dict)
     return reminder
 
@@ -107,6 +112,27 @@ async def read_reminder(db: Connection, reminder_id: ReminderId) -> Reminder | N
     return reminder
 
 
+async def read_reminders_from_db_to_dispatch(db: Connection) -> list[Reminder]:
+    table = Tables.reminders
+    query = dedent(
+        f"""
+        SELECT * FROM {table.name}
+        WHERE dispatched IS FALSE
+          AND next_occurrence IS NULL
+          AND next_occurrence <= :now_utc
+        ;
+        """
+    ).strip()
+    print(query)
+
+    db.row_factory = aiosqlite.Row
+
+    result = await db.execute(query, {"now_utc": datetime.now(tz=timezone.utc)})
+    rows = list(await result.fetchall())
+
+    return list(map(_row_to_reminder, rows))
+
+
 async def delete_reminder(db: Connection, reminder_id: ReminderId) -> Reminder | None:
     table = Tables.reminders
 
@@ -147,15 +173,8 @@ async def insert_reminder(reminder: Reminder, db: Connection) -> None:
         """
     ).strip()
 
-    params = {
-        "id": reminder.id,
-        "description": reminder.description,
-        "schedule": json.dumps(reminder.schedule.to_jsondict()),
-        "next_occurrence": reminder.next_occurrence,
-    }
-
     try:
-        await db.execute(sql=query, parameters=params)
+        await db.execute(sql=query, parameters=reminder.to_db_dict())
         await db.commit()
     except sqlite3.IntegrityError:
         raise ReminderIdMustBeUnique(
@@ -177,11 +196,4 @@ async def upsert_reminder(reminder: Reminder, db: Connection) -> None:
         """
     ).strip()
 
-    params = {
-        "id": reminder.id,
-        "description": reminder.description,
-        "schedule": json.dumps(reminder.schedule.to_jsondict()),
-        "next_occurrence": reminder.next_occurrence,
-    }
-
-    await db.execute(sql=query, parameters=params)
+    await db.execute(sql=query, parameters=reminder.to_db_dict())

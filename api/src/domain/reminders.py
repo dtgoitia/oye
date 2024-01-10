@@ -1,8 +1,11 @@
 from __future__ import annotations
 
 import datetime
+import json
 from dataclasses import dataclass
 from typing import Iterator, Protocol, TypeAlias
+
+from apischema import serialize
 
 from src.domain.ids import generate_id
 from src.model import JsonDict, ReminderId
@@ -30,7 +33,7 @@ class Schedulable(Protocol):
             "using the definition of the schedule and the current time, calculate next ocurrence"
         )
 
-    def to_jsondict(self) -> JsonDict:
+    def to_db_dict(self) -> JsonDict:
         raise NotImplementedError("provide a valid JSON representation")
 
 
@@ -49,7 +52,7 @@ class Once(Schedulable):
     def next_occurrence(self) -> Occurrence:
         return self.at
 
-    def to_jsondict(self) -> JsonDict:
+    def to_db_dict(self) -> JsonDict:
         return {
             "at": self.at.isoformat(),
             # "creation_timezone": self.creation_timezone,
@@ -79,8 +82,8 @@ class NewReminder:
     description: str
     schedule: Schedule
 
-    def to_jsondict(self) -> JsonDict:
-        return {"description": self.description, "schedule": self.schedule.to_jsondict()}
+    def to_db_dict(self) -> JsonDict:
+        return {"description": self.description, "schedule": self.schedule.to_db_dict()}
 
     def to_reminder(self, id: ReminderId) -> Reminder:
         return Reminder(id=id, description=self.description, schedule=self.schedule)
@@ -102,9 +105,12 @@ class Reminder:
     description: str
     schedule: Once  # add more types here: Once | Recurring
     next_occurrence: Occurrence | None = None
+    dispatched: bool = False
 
-    def to_json(self) -> JsonDict:
-        return {"id": self.id, "description": self.description, "schedule": self.schedule.to_jsondict()}
+    def to_db_dict(self) -> JsonDict:
+        result = serialize(Reminder, self)
+        result["schedule"] = json.dumps(self.schedule.to_db_dict())
+        return result
 
 
 def generate_reminder_id() -> ReminderId:

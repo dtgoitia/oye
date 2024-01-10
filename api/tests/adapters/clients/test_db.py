@@ -22,11 +22,13 @@ async def test_insert_reminders(db: Connection) -> None:
         id="rem_00000000",
         description="do foo",
         schedule=Once(at=d("2023-07-05 00:00:01 +01:00")),
+        dispatched=True,
     )
     reminder_b = Reminder(
         id="rem_11111111",
         description="do bar",
         schedule=Once(at=d("2023-07-05 00:00:13 +01:00")),
+        dispatched=False,
     )
 
     await insert_reminder(reminder=reminder_a, db=db)

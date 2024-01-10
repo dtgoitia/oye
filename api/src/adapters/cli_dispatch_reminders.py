@@ -1,10 +1,12 @@
 import asyncio
 import os
 
+import aiosqlite
 import telegram
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder
 
+from src import use_cases
 from src.config import Config, get_config
 
 
@@ -19,14 +21,13 @@ async def amain(config: Config) -> None:
             reply_markup=reply_markup,
         )
 
-    # TODO:
-    # get from DB all reminders whose `next_ocurrence` < now and dispatched = False
-    # dispatch them to the telegram bot API so that Telegram pings user device
-    print(config)
-    reminders = [
+    async with aiosqlite.connect(database=config.db_uri) as db:
+        reminders = await use_cases.get_reminders_to_dispatch(db=db)
+
+    telegram_reminders = [
         dict(
             chat_id="-1001998360297",
-            message="hola!",
+            message=reminder.description,
             reply_markup=InlineKeyboardMarkup(
                 inline_keyboard=[
                     #    [  1  ][  2  ]
@@ -44,7 +45,8 @@ async def amain(config: Config) -> None:
                     ],
                 ],
             ),
-        ),
+        )
+        for reminder in reminders
     ]
 
     tasks = [
@@ -55,7 +57,7 @@ async def amain(config: Config) -> None:
                 reply_markup=reminder["reply_markup"],
             )
         )
-        for reminder in reminders
+        for reminder in telegram_reminders
     ]
 
     await asyncio.gather(*tasks)

@@ -7,6 +7,7 @@ from src.adapters.clients.db import delete_reminder as delete_reminder_from_db
 from src.adapters.clients.db import insert_reminder as insert_reminder_in_db
 from src.adapters.clients.db import read_all_reminders as read_all_reminders_from_db
 from src.adapters.clients.db import read_reminder as read_reminder_from_db
+from src.adapters.clients.db import read_reminders_from_db_to_dispatch
 from src.devex import UnexpectedScenario
 from src.domain.reminders import NewReminder, Reminder, generate_reminder_id
 from src.model import ReminderId
@@ -54,6 +55,11 @@ async def get_reminders(db: Connection) -> list[Reminder]:
 
 async def get_reminder(reminder_id: ReminderId, db: Connection) -> Reminder | None:
     reminders = await read_reminder_from_db(reminder_id=reminder_id, db=db)
+    return reminders
+
+
+async def get_reminders_to_dispatch(db: Connection) -> list[Reminder]:
+    reminders = await read_reminders_from_db_to_dispatch(db=db)
     return reminders
 
 

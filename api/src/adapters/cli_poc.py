@@ -12,7 +12,7 @@ def main() -> None:
     response = requests.post(
         url=urljoin(config.api_base_url, "reminder"),
         json={
-            "utterance": "at 10:30pm fooootterance for you!",
+            "utterance": "in 3s fooootterance for you!",
             "timezone": "+00:00",
         },
     )
