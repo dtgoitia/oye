@@ -9,10 +9,14 @@ from src.config import get_config
 def main() -> None:
     config = get_config()
 
+    utterance = input("type someting like 'in 2m say hi!': ")
+    if not utterance:
+        utterance = "in 10s this is another boring reminder... :("
+
     response = requests.post(
         url=urljoin(config.api_base_url, "reminder"),
         json={
-            "utterance": "in 3s fooootterance for you!",
+            "utterance": utterance,
             "timezone": "+00:00",
         },
     )
