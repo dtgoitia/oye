@@ -86,7 +86,12 @@ class NewReminder:
         return {"description": self.description, "schedule": self.schedule.to_db_dict()}
 
     def to_reminder(self, id: ReminderId) -> Reminder:
-        return Reminder(id=id, description=self.description, schedule=self.schedule)
+        return Reminder(
+            id=id,
+            description=self.description,
+            schedule=self.schedule,
+            next_occurrence=self.schedule.next_occurrence,
+        )
 
 
 @dataclass(frozen=True)
