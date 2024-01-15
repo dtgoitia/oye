@@ -122,12 +122,20 @@ async def read_reminders_from_db_to_dispatch(db: Connection) -> list[Reminder]:
         f"""
         SELECT * FROM {table.name}
         WHERE dispatched IS FALSE
-          --AND next_occurrence IS NOT NULL
-          --AND next_occurrence <= :now_utc
+          AND next_occurrence <= :now_utc
         ;
         """
     ).strip()
-    parameters = {"now_utc": datetime.now(tz=timezone.utc)}
+    parameters = {
+        "now_utc": datetime.now(tz=timezone.utc)
+        #
+        # CAVEAT: SQLite ignores any provided timezones and always assumes you
+        # are working UTC
+        .replace(tzinfo=None)
+        #
+        # Not sure why, but it only works if I pass the datetime as a string
+        .isoformat(),
+    }
 
     logger.info(f"running query:\n{query}\n\nwith parameters: {parameters}")
     result = await db.execute(query, parameters=parameters)
@@ -202,3 +210,4 @@ async def upsert_reminder(reminder: Reminder, db: Connection) -> None:
     ).strip()
 
     await db.execute(sql=query, parameters=reminder.to_db_dict())
+    await db.commit()
