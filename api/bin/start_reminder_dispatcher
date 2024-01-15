@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+
+set -o errexit
+set -o pipefail
+set -o nounset
+
+log () {
+    message="${1}"
+    echo >&2 "${message}"
+}
+
+target_service="api"
+current_dir="$(basename $(pwd))"
+
+if [[ "$current_dir" != "oye" ]]; then
+    log "ERROR: you must execute this from the root of the repo" >&2
+    exit 1
+fi
+
+source $target_service/bin/dev/_activate_venv
+
+while true; do
+    docker compose run --rm oye-api-dev \
+        python -m src.adapters.cli_dispatch_reminders
+
+    log "Waiting 10s until next dispatch round..."
+    for i in {1..10}; do
+        log "${i}s"
+        sleep 1
+    done
+done

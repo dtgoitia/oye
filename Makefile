@@ -58,7 +58,7 @@ run_telegram_bot:
 	docker compose run --rm $(API_NAME) python -m src.adapters.telegram_bot
 
 run_reminder_dispatcher:
-	docker compose run --rm $(API_NAME) python -m src.adapters.cli_dispatch_reminders
+	api/bin/start_reminder_dispatcher
 
 lint_api:
 	api/bin/dev/lint
