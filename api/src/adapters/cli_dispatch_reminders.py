@@ -14,6 +14,7 @@ from src import use_cases
 from src.config import Config, get_config
 from src.domain.ids import generate_id
 from src.domain.reminders import Reminder
+from src.logs import LOG_DATE_FORMAT, LOG_FORMAT
 
 MessageId: TypeAlias = str
 
@@ -104,5 +105,5 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(level=logging.INFO, format=LOG_FORMAT, datefmt=LOG_DATE_FORMAT)
     main()

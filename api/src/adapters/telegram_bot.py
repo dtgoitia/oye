@@ -8,6 +8,7 @@ from telegram import Update
 from telegram.ext import ApplicationBuilder, CallbackQueryHandler, CommandHandler, ContextTypes
 
 from src.config import get_config
+from src.logs import LOG_DATE_FORMAT, LOG_FORMAT
 
 WAIT_TO_DELETE_SNOOZED_REMINDER = 4  # seconds
 
@@ -40,11 +41,7 @@ async def snooze(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
 
 if __name__ == "__main__":
-    logging.basicConfig(
-        level=logging.INFO,
-        format="%(asctime)s %(levelname)-8s %(message)s",
-        datefmt="%Y-%m-%d %H:%M:%S",
-    )
+    logging.basicConfig(level=logging.INFO, format=LOG_FORMAT, datefmt=LOG_DATE_FORMAT)
     config = get_config()
 
     application = ApplicationBuilder().token(os.environ["TELEGRAM_API_TOKEN"]).build()

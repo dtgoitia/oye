@@ -13,6 +13,7 @@ from src import use_cases
 from src.adapters.clients import db
 from src.config import get_config
 from src.domain.inference import InferenceFailed, infer_reminder, infer_timezone
+from src.logs import LOG_DATE_FORMAT, LOG_FORMAT
 from src.model import ReminderId, Utterance
 
 api = Sanic.get_app(name="oye-api", force_create=True)
@@ -93,11 +94,7 @@ async def delete_reminder(_: Request, reminder_id: ReminderId) -> JSONResponse:
 
 
 if __name__ == "__main__":
-    logging.basicConfig(
-        level=logging.INFO,
-        format="%(asctime)s %(levelname)-8s %(message)s",
-        datefmt="%Y-%m-%d %H:%M:%S",
-    )
+    logging.basicConfig(level=logging.INFO, format=LOG_FORMAT, datefmt=LOG_DATE_FORMAT)
     config = get_config()
 
     asyncio.run(db.initialize(config=config))

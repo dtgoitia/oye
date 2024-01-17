@@ -6,6 +6,7 @@ import aiosqlite
 
 from src import use_cases
 from src.config import Config, get_config
+from src.logs import LOG_DATE_FORMAT, LOG_FORMAT
 
 
 async def amain(config: Config) -> None:
@@ -23,5 +24,5 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(level=logging.INFO, format=LOG_FORMAT, datefmt=LOG_DATE_FORMAT)
     main()
