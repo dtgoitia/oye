@@ -60,6 +60,9 @@ run_telegram_bot:
 run_reminder_dispatcher:
 	api/bin/start_reminder_dispatcher
 
+run_next_occurrence_calculator:
+	api/bin/start_next_occurrence_calculator
+
 lint_api:
 	api/bin/dev/lint
 

@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+
+set -o errexit
+set -o pipefail
+set -o nounset
+
+current_file_name="${0}"
+current_dir="$(basename $(pwd))"
+
+target_service="api"
+source $target_service/bin/dev/_logging "${current_file_name}"
+
+if [[ "$current_dir" != "oye" ]]; then
+    error "you must execute this from the root of the repo"
+    exit 1
+fi
+
+source $target_service/bin/dev/_activate_venv
+
+while true; do
+    docker compose run --rm oye-api-dev \
+        python -m src.adapters.cli_calculate_next_occurrences
+
+    info "waiting 10s until next calculation..."
+    for i in {1..10}; do
+        info "${i}s"
+        sleep 1
+    done
+done
