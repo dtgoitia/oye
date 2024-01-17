@@ -54,6 +54,11 @@ POC phase: process is triggered by a Kubernetes CronJob that runs every 1 min
   - can scale, e.g.: spin up multiple instances of this worker, partitioned by user, and process in parallel
   - testable: easy to test in isolation, as the DB is the only interface
 
+## `next_occurrence` calculator
+
+- requirements:
+  - the `reminders` table should only contain active reminders, do not keep completed reminders around. If you want to keep record of triggered reminders, build a separate table (where you can also track snoozes, etc.)
+
 ![][1]
 
 <!-- External references -->
