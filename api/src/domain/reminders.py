@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 import datetime
+import enum
 import json
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import Iterator, Protocol, TypeAlias
 
 from apischema import serialize
 
+from src.devex import UnexpectedScenario
 from src.domain.ids import generate_id
 from src.model import JsonDict, ReminderId
 
@@ -47,6 +49,9 @@ class Once(Schedulable):
 
     at: datetime.datetime
     # creation_timezone: IsoTimezone
+
+    def __repr__(self) -> str:
+        return f"Once(at={self.at})"
 
     @property
     def next_occurrence(self) -> Occurrence:
@@ -173,3 +178,46 @@ class ReminderRepository:
                 result[occurrence] = [reminder]
 
         return result
+
+
+class Scenario(enum.Enum):
+    invalid_reminder = 1
+    awaiting_for_next_occurrence_to_be_calculated = 2
+    reminder_to_be_dispatched = 3
+    dispatched_reminder = 4
+
+
+def identify_scenario(reminder: Reminder, now: datetime.datetime) -> Scenario:
+    next_occurrence, dispatched = reminder.next_occurrence, reminder.dispatched
+    if next_occurrence is None:
+        if dispatched is True:
+            # invalid state: a reminder without a `next_occurrence` should have
+            # never been dispatched
+            return Scenario.invalid_reminder
+        else:
+            return Scenario.awaiting_for_next_occurrence_to_be_calculated
+
+    if next_occurrence <= now and dispatched is True:
+        return Scenario.dispatched_reminder
+
+    if next_occurrence <= now and dispatched is False:
+        # the reminder is ready to be dispatch anytime
+        return Scenario.reminder_to_be_dispatched
+
+    if now < next_occurrence and dispatched is True:
+        # invalid state: the reminder should have not been dispatched yet
+        return Scenario.invalid_reminder
+
+    if now < next_occurrence and dispatched is False:
+        # the reminder is ready to be dispatched, but it's too early to dispatch
+        return Scenario.reminder_to_be_dispatched
+
+    raise UnexpectedScenario(f"unable to identify the scenario: {reminder=}, {now=}")
+
+
+def calculate_next_occurrence(reminder: Reminder) -> Reminder:
+    schedule = reminder.schedule
+    if isinstance(schedule, Once):
+        return replace(reminder, next_occurrence=schedule.next_occurrence)
+
+    raise NotImplementedError(f"unsupported schedule type: {schedule.__class__}")

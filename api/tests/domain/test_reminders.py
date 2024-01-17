@@ -2,8 +2,8 @@ import datetime
 
 import pytest
 
-from src.domain.reminders import Once, Reminder, ReminderRepository
-from tests.factories import d
+from src.domain.reminders import Once, Reminder, ReminderRepository, Scenario, identify_scenario
+from tests.factories import build_reminder, d
 
 
 def test_once_next_occurrence() -> None:
@@ -59,3 +59,73 @@ def test_reminder_manager():
         "rem_22222222",
         # "rem_33333333"  <--- not this one
     }
+
+
+@pytest.mark.parametrize(
+    ("reminder", "now", "expected"),
+    (
+        pytest.param(
+            build_reminder(
+                schedule=Once(at=d("2024-01-17 00:00:01 +01:00")),
+                next_occurrence=None,
+                dispatched=True,
+            ),
+            d("2024-01-20 00:00:00 +01:00"),
+            Scenario.invalid_reminder,
+            id="invalid_state",
+        ),
+        pytest.param(
+            build_reminder(
+                schedule=Once(at=d("2024-01-17 00:00:01 +01:00")),
+                next_occurrence=None,
+                dispatched=False,
+            ),
+            d("2024-01-20 00:00:00 +01:00"),
+            Scenario.awaiting_for_next_occurrence_to_be_calculated,
+            id=Scenario.awaiting_for_next_occurrence_to_be_calculated.name,
+        ),
+        pytest.param(
+            build_reminder(
+                schedule=Once(at=d("2024-01-17 00:00:01 +01:00")),
+                next_occurrence=d("2024-01-17 00:00:01 +01:00"),
+                dispatched=True,
+            ),
+            d("2024-01-20 00:00:00 +01:00"),
+            Scenario.dispatched_reminder,
+            id=Scenario.dispatched_reminder.name,
+        ),
+        pytest.param(
+            build_reminder(
+                schedule=Once(at=d("2024-01-17 00:00:01 +01:00")),
+                next_occurrence=d("2024-01-17 00:00:01 +01:00"),
+                dispatched=False,
+            ),
+            d("2024-01-20 00:00:00 +01:00"),
+            Scenario.reminder_to_be_dispatched,
+            id=Scenario.reminder_to_be_dispatched.name,
+        ),
+        pytest.param(
+            build_reminder(
+                schedule=Once(at=d("2024-01-27 00:00:00 +01:00")),
+                next_occurrence=d("2024-01-27 00:00:00 +01:00"),
+                dispatched=True,
+            ),
+            d("2024-01-20 00:00:00 +01:00"),
+            Scenario.invalid_reminder,
+            id=Scenario.invalid_reminder.name,
+        ),
+        pytest.param(
+            build_reminder(
+                schedule=Once(at=d("2024-01-27 00:00:00 +01:00")),
+                next_occurrence=d("2024-01-27 00:00:00 +01:00"),
+                dispatched=False,
+            ),
+            d("2024-01-20 00:00:00 +01:00"),
+            Scenario.reminder_to_be_dispatched,
+            id=Scenario.reminder_to_be_dispatched.name,
+        ),
+    ),
+)
+def test_identify_scenario(reminder: Reminder, now: datetime.datetime, expected: Scenario) -> None:
+    scenario = identify_scenario(reminder=reminder, now=now)
+    assert scenario == expected
