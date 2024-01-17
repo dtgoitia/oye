@@ -1,3 +1,4 @@
+import logging
 from typing import AsyncIterator
 
 import aiosqlite
@@ -8,6 +9,10 @@ from aiosqlite import Connection
 from src.adapters.clients.db import create_tables_if_needed
 from src.config import Config
 from tests import factories
+
+# quiet logs during testing
+logging.getLogger("asyncio").setLevel(logging.WARNING)
+logging.getLogger("aiosqlite").setLevel(logging.WARNING)
 
 
 @pytest.fixture
