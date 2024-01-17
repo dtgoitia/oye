@@ -71,5 +71,5 @@ async def mark_reminder_as_dispatched(db: Connection, reminder: Reminder) -> Non
 
 
 async def delete_reminder(reminder_id: ReminderId, db: Connection) -> Reminder | None:
-    reminders = await delete_reminder_from_db(reminder_id=reminder_id, db=db)
-    return reminders
+    deleted = await delete_reminder_from_db(reminder_id=reminder_id, db=db)
+    return deleted
