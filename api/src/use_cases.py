@@ -1,3 +1,4 @@
+import datetime
 import logging
 from dataclasses import replace
 
@@ -10,7 +11,14 @@ from src.adapters.clients.db import read_all_reminders as read_all_reminders_fro
 from src.adapters.clients.db import read_reminder as read_reminder_from_db
 from src.adapters.clients.db import read_reminders_from_db_to_dispatch, upsert_reminder
 from src.devex import UnexpectedScenario
-from src.domain.reminders import NewReminder, Reminder, generate_reminder_id
+from src.domain.reminders import (
+    NewReminder,
+    Reminder,
+    Scenario,
+    calculate_next_occurrence,
+    generate_reminder_id,
+    identify_scenario,
+)
 from src.model import ReminderId
 
 logger = logging.getLogger(__name__)
@@ -73,3 +81,34 @@ async def mark_reminder_as_dispatched(db: Connection, reminder: Reminder) -> Non
 async def delete_reminder(reminder_id: ReminderId, db: Connection) -> Reminder | None:
     deleted = await delete_reminder_from_db(reminder_id=reminder_id, db=db)
     return deleted
+
+
+async def calculate_next_occurrences(db: Connection, now: datetime.datetime) -> None:
+    logger.info("processing reminders: started")
+
+    reminders = await get_reminders(db=db)
+    logger.debug(f"{len(reminders)} reminders found")
+    for reminder in reminders:
+        _log_prefix = f"reminder {reminder.id}"
+        logger.debug(f"{_log_prefix}: identifying scenario...")
+        scenario = identify_scenario(reminder=reminder, now=now)
+        logger.debug(f"{_log_prefix}: {scenario=}")
+
+        if scenario == Scenario.dispatched_reminder:
+            logger.debug(f"{_log_prefix}: nothing to do")
+            continue
+
+        if scenario == Scenario.awaiting_for_next_occurrence_to_be_calculated:
+            logger.debug(f"{_log_prefix}: calculating next occurrence...")
+            updated = calculate_next_occurrence(reminder=reminder)
+            await upsert_reminder(reminder=updated, db=db)
+            logger.debug(f"{_log_prefix}: reminder updated in DB")
+            continue
+
+        if scenario == Scenario.invalid_reminder:
+            logger.debug(f"{_log_prefix}: deleting invalid reminder...")
+            await delete_reminder(reminder_id=reminder.id, db=db)
+            logger.debug(f"{_log_prefix}: invalid reminder deleted")
+            continue
+
+    logger.info("processing reminders: ended")
