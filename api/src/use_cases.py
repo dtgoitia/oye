@@ -67,6 +67,10 @@ async def get_reminder(reminder_id: ReminderId, db: Connection) -> Reminder | No
     return reminders
 
 
+async def update_reminder(updated: Reminder, db: Connection) -> None:
+    await upsert_reminder(reminder=updated, db=db)
+
+
 async def get_reminders_to_dispatch(db: Connection) -> list[Reminder]:
     reminders = await read_reminders_from_db_to_dispatch(db=db)
     return reminders
@@ -112,3 +116,25 @@ async def calculate_next_occurrences(db: Connection, now: datetime.datetime) -> 
             continue
 
     logger.info("processing reminders: ended")
+
+
+def snooze_until(reminder: Reminder, t: datetime.datetime) -> Reminder:
+    """
+    Push `next_occurrence` until a specific timestamp - as opposed to specifying
+    a time delta from now, where "now" is the instant when the user requests the
+    snooze.
+
+    """
+    # TODO: if the reminder is recurring, you need to decide how to handle
+    # conflicts between the `next_occurrence` as per the snooze and the schedule
+    return replace(reminder, next_occurrence=t, dispatched=False)
+
+
+# def snooze_for(reminder: Reminder, delta: datetime.timedelta):
+#     """
+#     Push `next_occurrence` for some minutes, seconds, etc. - as opposed to
+#     specifying a specific timestamp.
+#     """
+#     # TODO: if the reminder is recurring, you need to decide how to handle
+#     # conflicts between the `next_occurrence` as per the snooze and the schedule
+#     raise NotImplementedError()

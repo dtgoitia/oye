@@ -79,12 +79,13 @@ class Recurring(Schedulable):
         return self.at
 
 
+Description: TypeAlias = str
 Schedule: TypeAlias = Once  # add more types here: Once | Recurring
 
 
 @dataclass(frozen=True)
 class NewReminder:
-    description: str
+    description: Description
     schedule: Schedule
 
     def to_db_dict(self) -> JsonDict:

@@ -3,13 +3,13 @@ from unittest.mock import ANY
 import pytest
 from sanic_testing.testing import SanicASGITestClient
 
-from src.adapters.api import api
+from src.adapters.api.crud import crud_api
 
 
 @pytest.mark.skip(reason="needs fixing")
 @pytest.mark.asyncio
 async def test_add_reminder() -> None:
-    client: SanicASGITestClient = api.asgi_client
+    client: SanicASGITestClient = crud_api.asgi_client
 
     breakpoint()
     _, response = await client.get("/reminder")

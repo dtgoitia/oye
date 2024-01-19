@@ -16,7 +16,7 @@ from src.domain.inference import InferenceFailed, infer_reminder, infer_timezone
 from src.logs import LOG_DATE_FORMAT, LOG_FORMAT
 from src.model import ReminderId, Utterance
 
-api = Sanic.get_app(name="oye-api", force_create=True)
+crud_api = Sanic.get_app(name="oye-crud-api", force_create=True)
 
 
 class ApiRoutes:
@@ -26,12 +26,12 @@ class ApiRoutes:
     test_publish = "/pub"
 
 
-@api.get(ApiRoutes.health)
+@crud_api.get(ApiRoutes.health)
 async def health(_: Request) -> JSONResponse:
     return json({"health": True})
 
 
-@api.get(ApiRoutes.reminder)
+@crud_api.get(ApiRoutes.reminder)
 async def get_reminder(_: Request, reminder_id: ReminderId) -> JSONResponse:
     config = get_config()
 
@@ -42,7 +42,7 @@ async def get_reminder(_: Request, reminder_id: ReminderId) -> JSONResponse:
         return json({"reminder": serialize(reminder)})
 
 
-@api.get(ApiRoutes.reminders)
+@crud_api.get(ApiRoutes.reminders)
 async def get_all_reminders(_: Request) -> JSONResponse:
     config = get_config()
 
@@ -51,7 +51,7 @@ async def get_all_reminders(_: Request) -> JSONResponse:
         return json({"reminders": serialize(reminders)})
 
 
-@api.post(ApiRoutes.reminders)
+@crud_api.post(ApiRoutes.reminders)
 @openapi.body({"utterance": Utterance})
 async def create_reminder(request: Request) -> JSONResponse:
     config = get_config()
@@ -80,7 +80,7 @@ async def create_reminder(request: Request) -> JSONResponse:
     return json({"added_reminder": serialize(added)})
 
 
-@api.delete(ApiRoutes.reminder)
+@crud_api.delete(ApiRoutes.reminder)
 async def delete_reminder(_: Request, reminder_id: ReminderId) -> JSONResponse:
     config = get_config()
 
@@ -99,7 +99,7 @@ if __name__ == "__main__":
 
     asyncio.run(db.initialize(config=config))
 
-    api.run(
+    crud_api.run(
         host=config.host,
         port=config.port,
         debug=config.debug_mode,

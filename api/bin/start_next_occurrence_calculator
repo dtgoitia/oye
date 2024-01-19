@@ -19,7 +19,7 @@ source $target_service/bin/dev/_activate_venv
 
 while true; do
     docker compose run --rm oye-api-dev \
-        python -m src.adapters.cli_calculate_next_occurrences
+        python -m src.adapters.cli.calculate_next_occurrences
 
     info "waiting 10s until next calculation..."
     for i in {1..10}; do

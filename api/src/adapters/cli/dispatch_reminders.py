@@ -11,6 +11,7 @@ from telegram import Message as TelegramMessage
 from telegram.ext import ApplicationBuilder
 
 from src import use_cases
+from src.adapters.api.telegram_bot import build_snooze_callback_data
 from src.config import Config, get_config
 from src.domain.ids import generate_id
 from src.domain.reminders import Reminder
@@ -58,6 +59,9 @@ async def amain(config: Config) -> None:
         message_id = generate_message_id()
         _map[message_id] = reminder
 
+        def _snooze(t: str) -> str:
+            return build_snooze_callback_data(raw_time_utterance=t, reminder_id=reminder.id)
+
         task = asyncio.create_task(
             send_message(
                 # TODO: `chat_id` should be stored somehow in DB, but it feels that
@@ -75,14 +79,14 @@ async def amain(config: Config) -> None:
                         #    [      3     ]
                         [
                             # https://core.telegram.org/bots/api#inlinekeyboardbutton
-                            InlineKeyboardButton(text="1m", callback_data="snooze:1m"),
-                            InlineKeyboardButton(text="2m", callback_data="snooze:2m"),
-                            InlineKeyboardButton(text="3m", callback_data="snooze:3m"),
+                            InlineKeyboardButton(text="1m", callback_data=_snooze("1m")),
+                            InlineKeyboardButton(text="2m", callback_data=_snooze("2m")),
+                            InlineKeyboardButton(text="3m", callback_data=_snooze("3m")),
                         ],
                         [
-                            InlineKeyboardButton(text="10m", callback_data="snooze:10m"),
-                            InlineKeyboardButton(text="1h", callback_data="snooze:1h"),
-                            InlineKeyboardButton(text="1d", callback_data="snooze:1d"),
+                            InlineKeyboardButton(text="10m", callback_data=_snooze("10m")),
+                            InlineKeyboardButton(text="1h", callback_data=_snooze("1h")),
+                            InlineKeyboardButton(text="1d", callback_data=_snooze("1d")),
                         ],
                     ],
                 ),

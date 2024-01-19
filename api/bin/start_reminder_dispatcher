@@ -19,7 +19,7 @@ source $target_service/bin/dev/_activate_venv
 
 while true; do
     docker compose run --rm oye-api-dev \
-        python -m src.adapters.cli_dispatch_reminders
+        python -m src.adapters.cli.dispatch_reminders
 
     info "waiting 10s until next dispatch round..."
     for i in {1..10}; do

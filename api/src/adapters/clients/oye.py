@@ -1,7 +1,7 @@
 import aiohttp
 from apischema import deserialize
 
-from src.adapters.api import ApiRoutes
+from src.adapters.api.crud import ApiRoutes
 from src.config import Config
 from src.main import Reminder
 from src.model import JsonDict, Utterance

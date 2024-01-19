@@ -8,7 +8,7 @@ services:
       target: dev
     image: oye-api-dev
     container_name: oye-api-dev
-    command: python -m src.adapters.api
+    command: python -m src.adapters.api.crud
     ports:
       - "5000:5000"
     environment:
@@ -27,7 +27,7 @@ services:
       target: release
     image: oye-api
     container_name: oye-api
-    command: python -m src.adapters.api
+    command: python -m src.adapters.api.crud
     ports:
       - "5000:5000"
     environment:

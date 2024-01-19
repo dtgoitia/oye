@@ -4,14 +4,14 @@ import re
 from typing import Literal
 
 from src.devex import UnexpectedScenario
-from src.domain.reminders import NewReminder, Occurrence, Once, Schedule
+from src.domain.reminders import Description, NewReminder, Occurrence, Once, Schedule
 from src.exhaustive_match import assert_never
 from src.model import IsoTimezone, Utterance
 
-STARTS_WITH_IN = re.compile(r"^in (?P<amount>[0-9]+)\s*(?P<unit>[a-zA-Z]+) (?P<message>.*)$")
-ENDS_WITH_IN = re.compile(r"^(?P<message>.*) in (?P<amount>[0-9]+)\s*(?P<unit>[a-zA-Z]+)$")
-STARTS_WITH_AT = re.compile(r"^at (?P<when>[0-9\.\:\sampAMP]+) (?P<message>.*)$")
-ENDS_WITH_AT = re.compile(r"^(?P<message>.*) at (?P<when>[0-9\.\:\sampAMP]+)$")
+STARTS_WITH_IN = re.compile(r"^in (?P<amount>[0-9]+)\s*(?P<unit>[a-zA-Z]+) (?P<description>.*)$")
+ENDS_WITH_IN = re.compile(r"^(?P<description>.*) in (?P<amount>[0-9]+)\s*(?P<unit>[a-zA-Z]+)$")
+STARTS_WITH_AT = re.compile(r"^at (?P<when>[0-9\.\:\sampAMP]+) (?P<description>.*)$")
+ENDS_WITH_AT = re.compile(r"^(?P<description>.*) at (?P<when>[0-9\.\:\sampAMP]+)$")
 
 # ======================================================================================
 # RegEx patterns to parse 'at ...'
@@ -81,7 +81,7 @@ def _infer_delta(raw_amount: str, raw_unit: str) -> datetime.timedelta:
             assert_never(f"Unsupported time unit: {unit}")
 
 
-def _infer_starts_with_in_x_time(raw: str, tz: datetime.timezone) -> tuple[str, Once]:
+def _infer_starts_with_in_x_time(raw: str, tz: datetime.timezone) -> tuple[Description, Once]:
     """
     Return the Schedule for an utterance like 'in 3 mins ...'.
     """
@@ -89,16 +89,16 @@ def _infer_starts_with_in_x_time(raw: str, tz: datetime.timezone) -> tuple[str, 
     if not match:
         raise InferenceFailed(f"expected to start with 'in X min', but got {raw} instead")
 
-    message = match.group("message")
+    description = match.group("description")
     amount = match.group("amount")
     unit = match.group("unit")
 
     at = datetime.datetime.now(tz=tz) + _infer_delta(raw_amount=amount, raw_unit=unit)
     schedule = Once(at=at)
-    return message, schedule
+    return description, schedule
 
 
-def _infer_ends_with_in_x_time(raw: str, tz: datetime.timezone) -> tuple[str, Once]:
+def _infer_ends_with_in_x_time(raw: str, tz: datetime.timezone) -> tuple[Description, Once]:
     """
     Return the Schedule for an utterance like '... in 3 mins'.
     """
@@ -107,13 +107,13 @@ def _infer_ends_with_in_x_time(raw: str, tz: datetime.timezone) -> tuple[str, On
     if not match:
         raise InferenceFailed(f"expected to end with 'in X min', but got {raw} instead")
 
-    message = match.group("message")
+    description = match.group("description")
     amount = match.group("amount")
     unit = match.group("unit")
 
     at = datetime.datetime.now(tz=tz) + _infer_delta(raw_amount=amount, raw_unit=unit)
     schedule = Once(at=at)
-    return message, schedule
+    return description, schedule
 
 
 def start_of_today(tz: datetime.timezone) -> datetime.datetime:
@@ -153,11 +153,11 @@ def _infer_start_with_at_x(raw: str, tz: datetime.timezone) -> tuple[str, Once]:
     if not match:
         raise InferenceFailed(f"expected to start with 'at <time_pattern>', but got {raw} instead")
 
-    message = match.group("message")
+    description = match.group("description")
     when = match.group("when")
 
     at = _infer_at_time(raw=when, tz=tz)
-    return message, Once(at=at)
+    return description, Once(at=at)
 
 
 def _infer_ends_with_at_x(raw: str, tz: datetime.timezone) -> tuple[str, Once]:
@@ -169,14 +169,14 @@ def _infer_ends_with_at_x(raw: str, tz: datetime.timezone) -> tuple[str, Once]:
     if not match:
         raise InferenceFailed(f"expected to end with 'at <time_pattern>', but got {raw} instead")
 
-    message = match.group("message")
+    description = match.group("description")
     when = match.group("when")
 
     at = _infer_at_time(raw=when, tz=tz)
-    return message, Once(at=at)
+    return description, Once(at=at)
 
 
-def _infer_schedule(utterance: Utterance, tz: datetime.timezone) -> tuple[str, Schedule]:
+def _infer_schedule(utterance: Utterance, tz: datetime.timezone) -> tuple[Description, Schedule]:
     """
     Takes human friendly texts and transforms them into something that can be scheduled
 
@@ -214,8 +214,8 @@ def _infer_schedule(utterance: Utterance, tz: datetime.timezone) -> tuple[str, S
 
 
 def infer_reminder(utterance: Utterance, tz: datetime.timezone) -> NewReminder:
-    message, schedule = _infer_schedule(utterance=utterance, tz=tz)
-    return NewReminder(description=message, schedule=schedule)
+    description, schedule = _infer_schedule(utterance=utterance, tz=tz)
+    return NewReminder(description=description, schedule=schedule)
 
 
 def infer_timezone(raw: IsoTimezone) -> datetime.timezone:
