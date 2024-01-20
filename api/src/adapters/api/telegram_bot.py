@@ -1,21 +1,20 @@
 import asyncio
 import datetime
 import logging
-import os
 import re
 from typing import TypeAlias
 
 import aiosqlite
-from telegram import Update
-from telegram.ext import ApplicationBuilder, CallbackQueryHandler, CommandHandler, ContextTypes
 
-from src import use_cases
+from src import telegram, use_cases
 from src.config import get_config
 from src.domain.inference import InferenceFailed, _infer_starts_with_in_x_time
 from src.domain.reminders import Once, ReminderRepository
 from src.logs import LOG_DATE_FORMAT, LOG_FORMAT
 from src.model import ReminderId
 from src.safety import Err, Ok, Result
+from telegram import Update
+from telegram.ext import CallbackQueryHandler, CommandHandler, ContextTypes
 
 logger = logging.getLogger(__name__)
 
@@ -134,7 +133,7 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format=LOG_FORMAT, datefmt=LOG_DATE_FORMAT)
     config = get_config()
 
-    application = ApplicationBuilder().token(os.environ["TELEGRAM_API_TOKEN"]).build()
+    application = telegram.build_application(config=config)
 
     application.add_handler(CommandHandler(command="start", callback=start))
     application.add_handler(
