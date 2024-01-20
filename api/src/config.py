@@ -5,6 +5,19 @@ from src.model import Seconds
 
 
 @dataclass(frozen=True)
+class Secret:
+    value: str
+
+    def __repr__(self) -> str:
+        if len(self.value) <= 4:
+            return "****"
+        return f"****{self.value[-2:]}"
+
+    def __str__(self) -> str:
+        return self.__repr__()
+
+
+@dataclass(frozen=True)
 class Config:
     host: str
     port: int
