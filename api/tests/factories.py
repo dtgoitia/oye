@@ -1,7 +1,7 @@
 import datetime
 from typing import Any
 
-from src.config import Config
+from src.config import Config, Secret
 from src.domain.reminders import Occurrence, Once, Reminder, generate_reminder_id
 from src.model import ReminderId
 
@@ -13,6 +13,7 @@ def get_test_config() -> Config:
         engine_tick_delta=1,
         debug_mode=True,
         db_uri=":memory:",
+        telegram_api_token=Secret("invalid-telegram-api-token"),
     )
 
 

@@ -24,6 +24,7 @@ class Config:
     debug_mode: bool
     engine_tick_delta: Seconds
     db_uri: str
+    telegram_api_token: Secret
 
     @property
     def api_base_url(self) -> str:
@@ -72,6 +73,7 @@ def get_config() -> Config:
         host=os.environ.get("OYE_API_HOST", "0.0.0.0"),
         port=5000,
         db_uri=mandatory_env_var_to_str("DB_PATH"),
+        telegram_api_token=Secret(mandatory_env_var_to_str("TELEGRAM_API_TOKEN")),
     )
 
     return config
